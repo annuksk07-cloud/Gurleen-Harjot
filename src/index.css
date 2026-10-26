@@ -1,0 +1,559 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --ivory: #FFF8EC;
+    --apricot: #F9D8BC;
+    --sage: #CBD9C0;
+    --lilac: #E2D7EE;
+    --marigold: #F2CF7E;
+    --coral: #E8A598;
+    --gold-start: #C99A4B;
+    --gold-end: #F1D58A;
+    --plum: #4E2F3A;
+    --mulberry: #7A3E55;
+
+    /* Active Theme CSS Variables (Default: Punjabi — Sarson Subah) */
+    --theme-base: #FFF8EC;
+    --theme-tint1: #F9D8BC;
+    --theme-tint2: #CBD9C0;
+    --theme-tint3: #E2D7EE;
+    --theme-accent: #D97C6C;
+    --theme-gold-start: #C99A4B;
+    --theme-gold-end: #F1D58A;
+    --theme-text: #4E2F3A;
+    --theme-button: #7A3E55;
+    --theme-pattern-uri: none;
+    --theme-density-scale: 1;
+    --theme-ornament-level: 2;
+
+    /* Dynamically bound active language script font */
+    --font-active-script: 'Cormorant Garamond', Georgia, serif;
+    /* Dynamically bound active theme Latin script heading font */
+    --font-theme-latin: 'Monsieur La Doulaise', cursive;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--theme-base);
+    color: var(--theme-text);
+    font-family: 'Jost', var(--font-active-script), sans-serif;
+    font-weight: 300;
+    transition:
+      background-color 600ms ease,
+      color 600ms ease;
+  }
+
+  /* Urdu Nastaliq RTL line-height & logical rhythm */
+  html[dir="rtl"] {
+    line-height: 1.75;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Smooth 600ms theme surface transitions */
+.theme-surface-transition {
+  transition:
+    background 600ms ease,
+    background-color 600ms ease,
+    color 600ms ease,
+    border-color 600ms ease;
+}
+
+/* Emotion Layer: Density scaling for section padding and heading size */
+.theme-density-section {
+  padding-top: calc(var(--section-base-pt, 5.5rem) * var(--theme-density-scale, 1));
+  padding-bottom: calc(var(--section-base-pb, 5.5rem) * var(--theme-density-scale, 1));
+}
+
+.theme-density-heading {
+  transform: scale(var(--theme-density-scale, 1));
+  transform-origin: center center;
+}
+
+/* Stylish theme card animations */
+@keyframes emojiStickerFloat {
+  0%, 100% {
+    transform: rotate(-8deg) translateY(0px);
+  }
+  50% {
+    transform: rotate(-8deg) translateY(-3px);
+  }
+}
+
+@keyframes svgBloomSway {
+  0%, 100% {
+    transform: rotate(-2.5deg) scale(1);
+  }
+  50% {
+    transform: rotate(2.5deg) scale(1.03);
+  }
+}
+
+.animate-emoji-sticker {
+  animation: emojiStickerFloat 3.2s ease-in-out infinite;
+}
+
+.animate-bloom-sway {
+  animation: svgBloomSway 5.5s ease-in-out infinite;
+  transform-origin: bottom right;
+}
+
+/* Static SVG Data-URI Background Pattern Overlay (~6% opacity) */
+.theme-pattern-overlay {
+  background-image: var(--theme-pattern-uri);
+  background-repeat: repeat;
+  background-size: 56px 56px;
+  opacity: 0.065;
+  pointer-events: none;
+}
+
+/* Soft blur cross-fade on language switch (< 300ms, no layout shift) */
+.lang-blur-transition {
+  transition:
+    opacity 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Directional icon flip for RTL (Urdu) */
+[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+/* Font Family Helpers — Latin script headings read from --font-theme-latin */
+.font-couple {
+  font-family: var(--font-theme-latin), 'Cormorant Garamond', cursive;
+}
+
+.font-couple-native {
+  font-family: var(--font-active-script), 'Cormorant Garamond', serif;
+  line-height: 1.45;
+}
+
+.font-cursive-touch {
+  font-family: var(--font-theme-latin), var(--font-active-script), cursive;
+}
+
+.font-heading-serif {
+  font-family: 'Cormorant Garamond', var(--font-active-script), Georgia, serif;
+}
+
+.font-hindi-heading {
+  font-family: var(--font-active-script), 'Cormorant Garamond', serif;
+  line-height: 1.45;
+}
+
+.font-hindi-body {
+  font-family: var(--font-active-script), serif;
+  line-height: 1.6;
+}
+
+.font-punjabi {
+  font-family: var(--font-active-script), serif;
+  line-height: 1.55;
+}
+
+.font-english {
+  font-family: 'Jost', var(--font-active-script), sans-serif;
+}
+
+/* Shimmering Gold Heading Effect driven by active theme */
+@keyframes goldShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.text-gold-shimmer {
+  background: linear-gradient(
+    110deg,
+    var(--theme-gold-start) 0%,
+    var(--theme-button) 35%,
+    var(--theme-gold-start) 65%,
+    var(--theme-accent) 100%
+  );
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: goldShimmer 9s ease-in-out infinite;
+}
+
+/* Ivory-gold text with soft warm shadow for readability on the closed envelope */
+.ivory-gold-envelope-text {
+  color: #FFF8EC;
+  text-shadow:
+    0 2px 14px rgba(52, 24, 32, 0.68),
+    0 1px 4px rgba(52, 24, 32, 0.58),
+    0 0 26px rgba(122, 62, 85, 0.42);
+}
+
+/* Soft cream glow behind text over gradients and sunset sky for guaranteed readability */
+.cream-text-glow {
+  text-shadow:
+    0 1px 14px rgba(255, 248, 236, 0.96),
+    0 0 28px rgba(255, 248, 236, 0.92),
+    0 2px 6px rgba(255, 248, 236, 0.88);
+}
+
+/* ============================================================================
+   16 THEME SHAPES FOR CARDS, COUNTDOWN TILES, FRAMES & DOCK
+   ============================================================================ */
+.gold-glass-card {
+  background: color-mix(in srgb, var(--theme-base) 84%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--theme-gold-start) 48%, transparent);
+  box-shadow:
+    0 12px 32px -12px rgba(78, 47, 58, 0.08),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.7);
+  transition:
+    background-color 600ms ease,
+    border-color 600ms ease,
+    border-radius 400ms ease;
+}
+
+/* 1. Sarson Subah: pill 28px with a dashed double cross-stitch border */
+html[data-theme-shape="pill_cross_stitch"] .gold-glass-card,
+html[data-theme-shape="pill_cross_stitch"] .theme-shaped-box {
+  border-radius: 28px;
+  border: 1.5px dashed color-mix(in srgb, var(--theme-gold-start) 75%, transparent);
+  outline: 1.5px dashed color-mix(in srgb, var(--theme-button) 38%, transparent);
+  outline-offset: -5px;
+}
+
+/* 2. Kesariya Gulab: scalloped corners (CSS mask) */
+html[data-theme-shape="scalloped_corners"] .gold-glass-card,
+html[data-theme-shape="scalloped_corners"] .theme-shaped-box {
+  border-radius: 8px;
+  border: 1.5px solid color-mix(in srgb, var(--theme-gold-start) 65%, transparent);
+  -webkit-mask-image:
+    radial-gradient(circle 12px at 0 0, transparent 95%, #000 100%),
+    radial-gradient(circle 12px at 100% 0, transparent 95%, #000 100%),
+    radial-gradient(circle 12px at 0 100%, transparent 95%, #000 100%),
+    radial-gradient(circle 12px at 100% 100%, transparent 95%, #000 100%);
+  -webkit-mask-size: 51% 51%;
+  -webkit-mask-position: top left, top right, bottom left, bottom right;
+  -webkit-mask-repeat: no-repeat;
+  mask-image:
+    radial-gradient(circle 12px at 0 0, transparent 95%, #000 100%),
+    radial-gradient(circle 12px at 100% 0, transparent 95%, #000 100%),
+    radial-gradient(circle 12px at 0 100%, transparent 95%, #000 100%),
+    radial-gradient(circle 12px at 100% 100%, transparent 95%, #000 100%);
+  mask-size: 51% 51%;
+  mask-position: top left, top right, bottom left, bottom right;
+  mask-repeat: no-repeat;
+}
+
+/* 3. Paithani: curved peacock-feather top corners */
+html[data-theme-shape="peacock_top_curve"] .gold-glass-card,
+html[data-theme-shape="peacock_top_curve"] .theme-shaped-box {
+  border-radius: 42px 42px 14px 14px;
+  border-top: 2.5px solid var(--theme-accent);
+}
+
+/* 4. Bandhani Rang: rounded square with a bandhani dot border */
+html[data-theme-shape="bandhani_dot_square"] .gold-glass-card,
+html[data-theme-shape="bandhani_dot_square"] .theme-shaped-box {
+  border-radius: 16px;
+  border: 2px dotted var(--theme-accent);
+  background-image:
+    radial-gradient(circle, color-mix(in srgb, var(--theme-gold-start) 40%, transparent) 1.5px, transparent 2px);
+  background-size: 16px 16px;
+}
+
+/* 5. Lal Paar: rectangle with a thick red plus thin gold double border (lal-paar) */
+html[data-theme-shape="lal_paar_rect"] .gold-glass-card,
+html[data-theme-shape="lal_paar_rect"] .theme-shaped-box {
+  border-radius: 6px;
+  border: 3px solid #D9463E;
+  outline: 1px solid #C69749;
+  outline-offset: -6px;
+}
+
+/* 6. Madhubani: hand-drawn wobbly Madhubani double-line border */
+html[data-theme-shape="madhubani_wobbly"] .gold-glass-card,
+html[data-theme-shape="madhubani_wobbly"] .theme-shaped-box {
+  border-radius: 14px;
+  border: 2px solid var(--theme-button);
+  outline: 1.5px solid var(--theme-gold-start);
+  outline-offset: -5px;
+  filter: url(#madhubani-wobble);
+}
+
+/* 7. Kanjeevaram: stepped temple-tier corners */
+html[data-theme-shape="temple_stepped"] .gold-glass-card,
+html[data-theme-shape="temple_stepped"] .theme-shaped-box {
+  border-radius: 0;
+  clip-path: polygon(
+    0 12px, 6px 12px, 6px 6px, 12px 6px, 12px 0,
+    calc(100% - 12px) 0, calc(100% - 12px) 6px, calc(100% - 6px) 6px, calc(100% - 6px) 12px, 100% 12px,
+    100% calc(100% - 12px), calc(100% - 6px) calc(100% - 12px), calc(100% - 6px) calc(100% - 6px), calc(100% - 12px) calc(100% - 6px), calc(100% - 12px) 100%,
+    12px 100%, 12px calc(100% - 6px), 6px calc(100% - 6px), 6px calc(100% - 12px), 0 calc(100% - 12px)
+  );
+}
+
+/* 8. Pochampally: zigzag ikat edge */
+html[data-theme-shape="ikat_zigzag"] .gold-glass-card,
+html[data-theme-shape="ikat_zigzag"] .theme-shaped-box {
+  border-radius: 0;
+  border: 1.5px dashed var(--theme-accent);
+  clip-path: polygon(
+    10px 0, calc(100% - 10px) 0, 100% 10px, calc(100% - 5px) 20px, 100% 30px,
+    100% calc(100% - 30px), calc(100% - 5px) calc(100% - 20px), 100% calc(100% - 10px),
+    calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 5px calc(100% - 20px),
+    0 calc(100% - 30px), 0 30px, 5px 20px, 0 10px
+  );
+}
+
+/* 9. Mysore Silk: arch-topped cards */
+html[data-theme-shape="palace_arch_top"] .gold-glass-card,
+html[data-theme-shape="palace_arch_top"] .theme-shaped-box {
+  border-radius: 120px 120px 18px 18px;
+  border-top: 2px solid var(--theme-gold-start);
+}
+
+/* 10. Kasavu: square corners with kasavu double gold stripes */
+html[data-theme-shape="kasavu_gold_stripes"] .gold-glass-card,
+html[data-theme-shape="kasavu_gold_stripes"] .theme-shaped-box {
+  border-radius: 2px;
+  border-top: 5px double #B8923F;
+  border-bottom: 5px double #B8923F;
+  border-left: 1px solid rgba(184, 146, 63, 0.38);
+  border-right: 1px solid rgba(184, 146, 63, 0.38);
+}
+
+/* 11. Zamurrad: Mughal ogee-arch cut */
+html[data-theme-shape="mughal_ogee_arch"] .gold-glass-card,
+html[data-theme-shape="mughal_ogee_arch"] .theme-shaped-box {
+  border-radius: 0;
+  clip-path: polygon(
+    18px 0, calc(50% - 14px) 0, 50% 7px, calc(50% + 14px) 0, calc(100% - 18px) 0,
+    100% 18px, 100% calc(100% - 18px), calc(100% - 18px) 100%,
+    18px 100%, 0 calc(100% - 18px), 0 18px
+  );
+}
+
+/* 12. Blush Modern: rounded 20px with a hairline */
+html[data-theme-shape="rounded_hairline"] .gold-glass-card,
+html[data-theme-shape="rounded_hairline"] .theme-shaped-box {
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--theme-gold-start) 45%, transparent);
+}
+
+/* 13. Sunehri Dhoop: rounded 22px with double gold corner brackets */
+html[data-theme-shape="rounded_double_gold_brackets"] .gold-glass-card,
+html[data-theme-shape="rounded_double_gold_brackets"] .theme-shaped-box {
+  border-radius: 22px;
+  border: 1.5px solid color-mix(in srgb, var(--theme-gold-start) 72%, transparent);
+  outline: 1.5px solid color-mix(in srgb, var(--theme-accent) 45%, transparent);
+  outline-offset: -5px;
+  box-shadow:
+    inset 0 0 0 3px color-mix(in srgb, var(--theme-base) 90%, transparent),
+    0 12px 30px -12px rgba(27, 42, 74, 0.14);
+}
+
+/* 14. Gulabi Jaali: Mughal ogee arch top */
+html[data-theme-shape="mughal_ogee_top"] .gold-glass-card,
+html[data-theme-shape="mughal_ogee_top"] .theme-shaped-box {
+  border-radius: 56px 56px 16px 16px;
+  border: 1.5px solid color-mix(in srgb, var(--theme-gold-start) 68%, transparent);
+  border-top: 2.5px solid var(--theme-accent);
+}
+
+/* 15. Ivory Grove: tall arch with a thin sage border */
+html[data-theme-shape="tall_arch_sage"] .gold-glass-card,
+html[data-theme-shape="tall_arch_sage"] .theme-shaped-box {
+  border-radius: 96px 96px 20px 20px;
+  border: 1px solid color-mix(in srgb, var(--theme-accent) 65%, transparent);
+}
+
+/* 16. Moti Gulabi: lotus-petal scalloped top */
+html[data-theme-shape="lotus_scalloped_top"] .gold-glass-card,
+html[data-theme-shape="lotus_scalloped_top"] .theme-shaped-box {
+  border-radius: 36px 36px 16px 16px;
+  border: 1.5px solid color-mix(in srgb, var(--theme-gold-start) 65%, transparent);
+  outline: 1px solid color-mix(in srgb, var(--theme-accent) 38%, transparent);
+  outline-offset: -4px;
+}
+
+/* ============================================================================
+   16 THEME BUTTON TREATMENTS (.theme-btn)
+   ============================================================================ */
+@keyframes madhubaniWiggle {
+  0%, 100% { transform: rotate(0deg) scale(0.98); }
+  25% { transform: rotate(-1.8deg) scale(0.98); }
+  75% { transform: rotate(1.8deg) scale(0.98); }
+}
+
+.theme-btn {
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 220ms ease, box-shadow 220ms ease;
+}
+
+/* 1. Sarson Subah: stitched pill with a press bounce */
+html[data-theme-button="stitched_pill_bounce"] .theme-btn {
+  border-radius: 9999px;
+  outline: 1.25px dashed color-mix(in srgb, var(--theme-gold-end) 75%, transparent);
+  outline-offset: -4px;
+}
+html[data-theme-button="stitched_pill_bounce"] .theme-btn:active {
+  transform: scale(0.94);
+}
+
+/* 2. Kesariya Gulab: scalloped with a glow on press */
+html[data-theme-button="scalloped_glow"] .theme-btn {
+  border-radius: 10px;
+  -webkit-mask-image:
+    radial-gradient(circle 6px at 0 0, transparent 94%, #000 100%),
+    radial-gradient(circle 6px at 100% 0, transparent 94%, #000 100%),
+    radial-gradient(circle 6px at 0 100%, transparent 94%, #000 100%),
+    radial-gradient(circle 6px at 100% 100%, transparent 94%, #000 100%);
+  -webkit-mask-size: 51% 51%;
+  -webkit-mask-position: top left, top right, bottom left, bottom right;
+  -webkit-mask-repeat: no-repeat;
+  mask-image:
+    radial-gradient(circle 6px at 0 0, transparent 94%, #000 100%),
+    radial-gradient(circle 6px at 100% 0, transparent 94%, #000 100%),
+    radial-gradient(circle 6px at 0 100%, transparent 94%, #000 100%),
+    radial-gradient(circle 6px at 100% 100%, transparent 94%, #000 100%);
+  mask-size: 51% 51%;
+  mask-position: top left, top right, bottom left, bottom right;
+  mask-repeat: no-repeat;
+}
+html[data-theme-button="scalloped_glow"] .theme-btn:active {
+  filter: brightness(1.14) drop-shadow(0 0 12px var(--theme-gold-end));
+}
+
+/* 3. Paithani: curved peacock top corners */
+html[data-theme-button="peacock_curve"] .theme-btn {
+  border-radius: 24px 24px 10px 10px;
+}
+
+/* 4. Bandhani Garba: bandhani dotted border */
+html[data-theme-button="bandhani_dotted"] .theme-btn {
+  border-radius: 14px;
+  outline: 2px dotted color-mix(in srgb, var(--theme-gold-end) 80%, transparent);
+  outline-offset: -4px;
+}
+
+/* 5. Alpona: lal-paar red + gold double border rectangle */
+html[data-theme-button="lal_paar_border"] .theme-btn {
+  border-radius: 6px;
+  outline: 1.5px solid #D9463E;
+  outline-offset: -4px;
+}
+
+/* 6. Madhubani: hand-drawn outline that wiggles on press */
+html[data-theme-button="madhubani_wiggle"] .theme-btn {
+  border-radius: 12px;
+  outline: 1.5px solid var(--theme-gold-start);
+  outline-offset: -3px;
+}
+html[data-theme-button="madhubani_wiggle"] .theme-btn:active {
+  animation: madhubaniWiggle 240ms ease-in-out;
+}
+
+/* 7. Kanjeevaram: stepped temple-tier corners */
+html[data-theme-button="temple_tier"] .theme-btn {
+  border-radius: 0;
+  clip-path: polygon(
+    0 6px, 4px 6px, 4px 3px, 8px 3px, 8px 0,
+    calc(100% - 8px) 0, calc(100% - 8px) 3px, calc(100% - 4px) 3px, calc(100% - 4px) 6px, 100% 6px,
+    100% calc(100% - 6px), calc(100% - 4px) calc(100% - 6px), calc(100% - 4px) calc(100% - 3px), calc(100% - 8px) calc(100% - 3px), calc(100% - 8px) 100%,
+    8px 100%, 8px calc(100% - 3px), 4px calc(100% - 3px), 4px calc(100% - 6px), 0 calc(100% - 6px)
+  );
+}
+
+/* 8. Pochampally: ikat zigzag / diamond edge */
+html[data-theme-button="ikat_edge"] .theme-btn {
+  border-radius: 0;
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%);
+}
+
+/* 9. Mysore Silk: arch-topped button */
+html[data-theme-button="arch_pill"] .theme-btn {
+  border-radius: 26px 26px 10px 10px;
+}
+
+/* 10. Kasavu: square corners with kasavu gold stripes */
+html[data-theme-button="kasavu_striped"] .theme-btn {
+  border-radius: 2px;
+  border-top: 3px double #F2DA8E;
+  border-bottom: 3px double #F2DA8E;
+}
+
+/* 11. Zamurrad: Mughal ogee-arch cut */
+html[data-theme-button="mughal_ogee"] .theme-btn {
+  border-radius: 0;
+  clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%);
+}
+
+/* 12. Blush Modern: rounded 20px with hairline */
+html[data-theme-button="hairline_rounded"] .theme-btn {
+  border-radius: 20px;
+}
+
+/* 13. Sunehri Dhoop: deep blue pill with gold border */
+html[data-theme-button="deep_blue_gold_pill"] .theme-btn {
+  border-radius: 9999px;
+  border: 1.5px solid #D4A017;
+  box-shadow: inset 0 0 0 2px rgba(247, 217, 124, 0.35);
+}
+
+/* 14. Gulabi Jaali: rose-gold pill with glow */
+html[data-theme-button="rose_gold_glow_pill"] .theme-btn {
+  border-radius: 9999px;
+  border: 1px solid #E2B86B;
+  box-shadow: 0 4px 18px -2px rgba(196, 90, 114, 0.32);
+}
+
+/* 15. Ivory Grove: sage pill */
+html[data-theme-button="sage_pill"] .theme-btn {
+  border-radius: 9999px;
+  border: 1px solid rgba(111, 143, 114, 0.55);
+}
+
+/* 16. Moti Gulabi: lotus-pink pill with gold rim */
+html[data-theme-button="lotus_pink_pill"] .theme-btn {
+  border-radius: 9999px;
+  border: 1.5px solid #C99A4B;
+  box-shadow: inset 0 0 0 1px rgba(243, 215, 138, 0.5);
+}
+
+/* Arch and Oval Frame Shapes */
+.shape-arch {
+  border-radius: 9999px 9999px 24px 24px;
+}
+
+.shape-oval {
+  border-radius: 9999px;
+}
+
+/* Safe area padding helpers */
+.pb-safe {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
+.pt-safe {
+  padding-top: max(1rem, env(safe-area-inset-top));
+}
+

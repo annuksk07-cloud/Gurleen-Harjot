@@ -1,0 +1,6 @@
+{
+  "name": "Sarson Subah — Simran & Arjun Wedding Invitation",
+  "description": "A mobile-first, romantic Punjabi wedding invitation crafted in code with the Sarson Subah palette, Phulkari SVG dividers, and drifting marigold petals.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
