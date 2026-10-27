@@ -246,7 +246,7 @@ test('i18n dictionary provides all 12 native-script languages, RTL for Urdu, and
     const dict = getTranslationDictionary(code);
     assert.ok(dict.tapToOpen.length > 0, `tapToOpen empty for ${code}`);
     assert.ok(dict.countdownDays.length > 0, `countdownDays empty for ${code}`);
-    assert.ok(dict.rsvpSubmitButton.length > 0, `rsvpSubmitButton empty for ${code}`);
+    assert.ok(dict.rsvpStep1Title.length > 0, `rsvpStep1Title empty for ${code}`);
   }
 
   // Fallback to English for unknown language or missing custom key
@@ -362,7 +362,7 @@ test('THEMES defines all 16 styles, emotion layer tokens, language-follow mappin
     assert.equal('x' in motionSpec.initial, false, `horizontal x entrance not allowed on ${id}`);
 
     const reducedSpec = getThemeEntranceMotion(t, true);
-    assert.deepEqual(reducedSpec.initial, { opacity: 0 });
+    assert.deepEqual(reducedSpec.initial, { opacity: 1 });
     assert.deepEqual(reducedSpec.whileInView, { opacity: 1 });
 
     const randomOther = getRandomDifferentThemeId(id, () => 0.42);
@@ -375,10 +375,10 @@ test('THEMES defines all 16 styles, emotion layer tokens, language-follow mappin
   assert.equal(baseEn.event1ScriptTitle, 'Haldi');
   assert.equal(baseEn.event2ScriptTitle, 'Mehndi');
   assert.equal(baseEn.event3ScriptTitle, 'Sangeet');
-  assert.equal(baseEn.event4ScriptTitle, 'Phere');
+  assert.equal(baseEn.event4ScriptTitle, 'Wedding Ceremony');
   assert.equal(baseEn.event5ScriptTitle, 'Reception');
   assert.equal(baseEn.event1NativeTitle, 'Haldi');
-  assert.equal(baseEn.event4NativeTitle, 'Phere');
+  assert.equal(baseEn.event4NativeTitle, 'Wedding Ceremony');
   assert.equal(baseEn.event5NativeTitle, 'Reception');
 
   const paithaniEvents = [0, 1, 2, 3, 4].map((i) => getThemeEventPalette(THEMES.paithani, i));

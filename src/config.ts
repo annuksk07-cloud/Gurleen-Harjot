@@ -5,7 +5,16 @@
  * Every name, date, venue, phone number, media slot, and map link lives in
  * this ONE object. Update any value below to customize the entire invitation.
  */
+export const HOST_PHONE = "7827357021";
+export const HOST_WHATSAPP = "917827357021";
+export const HOST_PHONE_DISPLAY = "+91 78273 57021";
+
 export const WEDDING_CONFIG = {
+  // 0. Host Contact (Single Source of Truth)
+  HOST_PHONE,
+  HOST_WHATSAPP,
+  HOST_PHONE_DISPLAY,
+
   // 1. Opening Video & Audio Slots
   SAMPLE_MODE: true, // Show "Reset demo" link in footer
   VIDEO_SRC: "/wedding-video.mp4", // 9:16 10s envelope-to-mustard-fields video in /public
@@ -478,7 +487,7 @@ export const WEDDING_CONFIG = {
     addressLine2: "Amritsar, Punjab 143001, India",
     landmark: "15 minutes from Sri Guru Ram Dass Jee International Airport",
     mapsUrl: "https://maps.google.com/?q=Amritsar+Grand+Trunk+Road+Punjab",
-    contactPhoneDisplay: "+91 98765 43210",
+    contactPhoneDisplay: HOST_PHONE_DISPLAY,
   },
 
   // 7. Dress Code Swatches ("Sarson Subah" Palette)
@@ -532,7 +541,7 @@ export const WEDDING_CONFIG = {
   ],
 
   // 9. WhatsApp RSVP Configuration (No backend needed)
-  RSVP_WHATSAPP_NUMBER: "919876543210", // International format without '+' for wa.me link
+  RSVP_WHATSAPP_NUMBER: HOST_WHATSAPP, // International format without '+' for wa.me link
   RSVP_DEADLINE: "2026-11-25T23:59:59+05:30",
   RSVP_DEADLINE_TEXT: "Kindly RSVP by 25th November 2026",
 

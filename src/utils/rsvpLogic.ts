@@ -238,17 +238,17 @@ export function createInitialRsvpState(
     travel: {
       city: '',
       arrivalDate: '2026-12-11',
-      arrivalTime: '11:00 AM',
+      arrivalTime: '11:00',
       departureDate: '2026-12-13',
-      departureTime: '02:00 PM',
+      departureTime: '14:00',
       mode: 'Flight',
       carrierNumber: '',
       needPickup: false,
       pickupLoc: 'airport',
-      pickupTime: '11:30 AM',
+      pickupTime: '11:30',
       needDrop: false,
       dropLoc: 'airport',
-      dropTime: '12:00 PM',
+      dropTime: '12:00',
       carsCount: 0,
       needParking: false,
       carpoolOfferSeats: 0,
@@ -343,7 +343,10 @@ export function buildWhatsAppRsvpMessage(
   isShortened: boolean;
   waMeUrl: string;
 } {
-  const sanitizedPhone = (config.RSVP_WHATSAPP_NUMBER || '').replace(/[^0-9]/g, '');
+  const sanitizedPhone = (config.HOST_WHATSAPP || config.RSVP_WHATSAPP_NUMBER || '').replace(
+    /[^0-9]/g,
+    ''
+  );
   const langName = getLanguageDisplayName(langCode);
   const sideLabel =
     state.side === 'dulhan'
@@ -606,7 +609,7 @@ export function generateChosenEventsIcs(
         `DTSTART:${dtStart}`,
         `DTEND:${dtEnd}`,
         `SUMMARY:${evt.englishTitle} - ${config.COUPLE_DISPLAY_NAMES} Wedding`,
-        `DESCRIPTION:Language: ${langName}\\nRSVP Confirmed for ${guestName}. ${evt.timeSubline || ''}\\nVenue: ${evt.venueName}`,
+        `DESCRIPTION:Language: ${langName}\\nRSVP Confirmed for ${guestName}. ${evt.timeSubline || ''}\\nVenue: ${evt.venueName}\\nHost Contact: ${config.HOST_PHONE_DISPLAY}`,
         `LOCATION:${evt.venueName}, ${evt.venueAddress}`,
         'STATUS:CONFIRMED',
         'END:VEVENT',

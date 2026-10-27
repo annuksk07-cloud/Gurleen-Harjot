@@ -23,6 +23,7 @@ import {
   WeddingTheme,
 } from '../themes/themes';
 import { formatPersonalisedLine } from '../utils/relativeMatching';
+import { buildHostWhatsAppHref, getContactTranslations } from '../i18n/contactTranslations';
 
 interface HamareUtsavSectionProps {
   config: WeddingConfig;
@@ -162,6 +163,7 @@ interface EventBlockProps {
   openInMapsLabel: string;
   addToCalendarLabel: string;
   guestDisplayName?: string | null;
+  config: WeddingConfig;
   onDownloadCalendar: () => void;
   prefersReducedMotion: boolean;
 }
@@ -182,6 +184,7 @@ const EventBlock: React.FC<EventBlockProps> = ({
   openInMapsLabel,
   addToCalendarLabel,
   guestDisplayName = null,
+  config,
   onDownloadCalendar,
   prefersReducedMotion,
 }) => {
@@ -937,6 +940,24 @@ const EventBlock: React.FC<EventBlockProps> = ({
               <span>{addToCalendarLabel}</span>
             </button>
           </div>
+
+          {/* 4. Small text link "Ask about this event" opening WhatsApp */}
+          <div className="mt-2 w-full max-w-[420px] mx-auto lg:mx-0 flex justify-center lg:justify-start">
+            <a
+              href={buildHostWhatsAppHref(
+                `Hello, I have a question about the ${event.name?.en || event.englishTitle}`,
+                config
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid={`utsav-ask-event-${event.id}`}
+              aria-label={`${getContactTranslations(langCode).askAboutEvent} — ${localizedScriptTitle}`}
+              className="min-h-[44px] px-3 py-2 inline-flex items-center justify-center gap-1.5 font-english text-xs underline underline-offset-4 opacity-90 hover:opacity-100 transition-opacity"
+              style={{ color: theme.button }}
+            >
+              <span>{getContactTranslations(langCode).askAboutEvent}</span>
+            </a>
+          </div>
         </div>
       </div>
     </article>
@@ -1064,6 +1085,7 @@ export const HamareUtsavSection: React.FC<HamareUtsavSectionProps> = ({
               openInMapsLabel={openInMapsLabel}
               addToCalendarLabel={addToCalendarLabel}
               guestDisplayName={guestDisplayName}
+              config={config}
               onDownloadCalendar={onDownloadCalendar}
               prefersReducedMotion={prefersReducedMotion}
             />

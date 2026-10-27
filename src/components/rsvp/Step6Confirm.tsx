@@ -4,6 +4,7 @@ import {
 } from '../../utils/rsvpTypes';
 import { config } from '../../config';
 import {
+  buildWhatsAppRsvpMessage,
   calculatePartyTotals,
   getDanceLevelLabel,
   getSweetToothLabel,
@@ -11,6 +12,10 @@ import {
   generateGuestPassCanvas,
 } from '../../utils/rsvpLogic';
 import { TranslationDictionary } from '../../i18n/translations';
+import {
+  formatManualSendToast,
+  getContactTranslations,
+} from '../../i18n/contactTranslations';
 import { formatPersonalisedLine } from '../../utils/relativeMatching';
 import { VegNonVegMark } from './FoodMarks';
 
@@ -41,6 +46,8 @@ export const Step6Confirm: React.FC<Step6Props> = ({
   const [downloadingCal, setDownloadingCal] = useState(false);
   const totals = calculatePartyTotals(state.members);
   const activeGuestName = guestDisplayName || state.primaryName.trim() || null;
+  const contactT = getContactTranslations(lang);
+  const waResult = buildWhatsAppRsvpMessage(state, config, lang);
 
   // Save guest pass canvas PNG
   const handleDownloadGuestPass = async () => {
@@ -76,7 +83,7 @@ export const Step6Confirm: React.FC<Step6Props> = ({
           : '🎫 Guest pass downloaded!'
       );
     } catch {
-      onShowToast('Could not create guest pass.');
+      onShowToast(formatManualSendToast(lang, config));
     } finally {
       setDownloadingPass(false);
     }
@@ -115,7 +122,7 @@ export const Step6Confirm: React.FC<Step6Props> = ({
           : '📅 Calendar events (.ics) downloaded!'
       );
     } catch {
-      onShowToast('Could not create calendar file.');
+      onShowToast(formatManualSendToast(lang, config));
     } finally {
       setDownloadingCal(false);
     }
@@ -445,15 +452,43 @@ export const Step6Confirm: React.FC<Step6Props> = ({
 
       {/* ACTION BUTTONS */}
       <div className="space-y-3 pt-2">
-        {/* BIG MAIN CTA: Pakka, ticket confirm karo */}
+        {/* BIG MAIN CTA: Confirm ticket & send on WhatsApp */}
         <button
           type="button"
+          data-testid="rsvp-confirm-btn"
           onClick={onFinalSubmit}
+          aria-label={`${contactT.confirmTicketCta} (${config.HOST_PHONE_DISPLAY})`}
           className="w-full min-h-[52px] px-6 py-3.5 rounded-xl font-bold uppercase tracking-wider text-sm shadow-xl flex items-center justify-center gap-3 transition-all transform active:scale-95 bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 hover:from-amber-500 hover:to-amber-700 text-white cursor-pointer"
         >
           <span className="text-xl">🎟️</span>
-          <span>Pakka, ticket confirm karo (Send via WhatsApp)</span>
+          <span>{contactT.confirmTicketCta}</span>
         </button>
+
+        {/* Direct "Send on WhatsApp" link */}
+        <a
+          href={waResult.waMeUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="rsvp-send-whatsapp-btn"
+          aria-label={`${contactT.sendOnWhatsApp} (${config.HOST_PHONE_DISPLAY})`}
+          onClick={() => {
+            onChange((prev) => ({
+              ...prev,
+              isConfirmed: true,
+              updatedAt: new Date().toISOString(),
+            }));
+            if (waResult.isShortened) {
+              if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                navigator.clipboard.writeText(waResult.fullText).catch(() => {});
+              }
+              onShowToast(contactT.fullDetailsCopiedToast);
+            }
+          }}
+          className="w-full min-h-[46px] px-5 py-2.5 rounded-xl border border-emerald-600/70 bg-emerald-50/90 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-emerald-100/90 transition-colors shadow-xs"
+        >
+          <span>💬</span>
+          <span>{contactT.sendOnWhatsApp}</span>
+        </a>
 
         {/* Action Row: Copy details, Save guest pass, Add chosen events to calendar */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">

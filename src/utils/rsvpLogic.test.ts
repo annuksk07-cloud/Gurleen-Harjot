@@ -12,7 +12,14 @@ import {
   generateChosenEventsIcs,
   createInitialRsvpState,
 } from './rsvpLogic';
-import { WEDDING_CONFIG } from '../config';
+import { HOST_PHONE, HOST_PHONE_DISPLAY, HOST_WHATSAPP, WEDDING_CONFIG } from '../config';
+import {
+  buildHostTelHref,
+  buildHostWhatsAppHref,
+  CONTACT_TRANSLATIONS,
+  formatManualSendToast,
+  getContactTranslations,
+} from '../i18n/contactTranslations';
 import { GuestMember } from './rsvpTypes';
 
 test('generateRsvpCode outputs prefix and 4 uppercase alphanumeric characters', () => {
@@ -98,7 +105,7 @@ test('getPartySizeMicrocopy returns warm funny lines', () => {
 
 test('buildWhatsAppRsvpMessage formats clean emoji human-readable text and preserves RSVP code', () => {
   const state = createInitialRsvpState(WEDDING_CONFIG, 'Priya & Rahul');
-  state.phone = '9876543210';
+  state.phone = WEDDING_CONFIG.HOST_PHONE;
   state.city = 'Delhi';
   state.side = 'dulhan';
 
@@ -108,13 +115,54 @@ test('buildWhatsAppRsvpMessage formats clean emoji human-readable text and prese
   assert.ok(res.fullText.includes('Dulhan ki taraf'));
   assert.ok(!res.fullText.includes('RSVPDATA:'));
   assert.ok(!res.fullText.includes('base64'));
-  assert.ok(res.waMeUrl.startsWith(`https://wa.me/${WEDDING_CONFIG.RSVP_WHATSAPP_NUMBER}?text=`));
+  assert.ok(res.waMeUrl.startsWith(`https://wa.me/${WEDDING_CONFIG.HOST_WHATSAPP}?text=`));
 });
 
-test('generateChosenEventsIcs filters only chosen events', () => {
+test('generateChosenEventsIcs filters only chosen events and includes host contact phone', () => {
   const ics = generateChosenEventsIcs(['Phere'], WEDDING_CONFIG, 'Priya');
   assert.ok(ics.includes('BEGIN:VCALENDAR'));
   assert.ok(ics.includes('Phere'));
   assert.ok(ics.includes('Confirmed for Priya'));
+  assert.ok(ics.includes(WEDDING_CONFIG.HOST_PHONE_DISPLAY));
   assert.ok(ics.includes('END:VCALENDAR'));
 });
+
+test('Host contact single source of truth config and 12-language contact helpers match spec', () => {
+  assert.equal(HOST_PHONE, '7827357021');
+  assert.equal(HOST_WHATSAPP, '917827357021');
+  assert.equal(HOST_PHONE_DISPLAY, '+91 78273 57021');
+  assert.equal(WEDDING_CONFIG.HOST_PHONE, HOST_PHONE);
+  assert.equal(WEDDING_CONFIG.HOST_WHATSAPP, HOST_WHATSAPP);
+  assert.equal(WEDDING_CONFIG.HOST_PHONE_DISPLAY, HOST_PHONE_DISPLAY);
+  assert.equal(WEDDING_CONFIG.RSVP_WHATSAPP_NUMBER, HOST_WHATSAPP);
+  assert.equal(WEDDING_CONFIG.PRIMARY_VENUE.contactPhoneDisplay, HOST_PHONE_DISPLAY);
+
+  assert.equal(buildHostTelHref(WEDDING_CONFIG), 'tel:+917827357021');
+  assert.equal(
+    buildHostWhatsAppHref('Hello, I need help finding the venue', WEDDING_CONFIG),
+    'https://wa.me/917827357021?text=Hello%2C%20I%20need%20help%20finding%20the%20venue'
+  );
+
+  const enT = getContactTranslations('en');
+  assert.equal(enT.callForDirections, 'Call for directions');
+  assert.equal(enT.whatsappUs, 'WhatsApp us');
+  assert.equal(enT.askAboutEvent, 'Ask about this event');
+  assert.equal(enT.travelHelpButton, 'Need help with travel? WhatsApp us');
+  assert.equal(enT.footerQuestionsLine, 'Questions? We are one message away');
+  assert.equal(enT.replyWithLove, 'Reply with love');
+  assert.equal(enT.sendOnWhatsApp, 'Send on WhatsApp');
+  assert.equal(enT.fullDetailsCopiedToast, 'Full details copied, please paste them in the chat');
+
+  const expectedLangs = ['en', 'hi', 'pa', 'mr', 'gu', 'bn', 'bho', 'ta', 'te', 'kn', 'ml', 'ur'];
+  for (const lang of expectedLangs) {
+    const t = CONTACT_TRANSLATIONS[lang];
+    assert.ok(t, `Missing CONTACT_TRANSLATIONS for ${lang}`);
+    for (const [k, v] of Object.entries(t)) {
+      assert.ok(typeof v === 'string' && v.trim().length > 0, `Empty ${k} for ${lang}`);
+      assert.ok(!v.includes('undefined'), `String ${k} for ${lang} contains undefined`);
+    }
+    const manualToast = formatManualSendToast(lang, WEDDING_CONFIG);
+    assert.ok(manualToast.includes(HOST_PHONE_DISPLAY), `Manual toast for ${lang} missing phone display`);
+  }
+});
+

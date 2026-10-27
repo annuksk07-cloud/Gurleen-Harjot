@@ -1,5 +1,6 @@
 import React from 'react';
 import { Check, Heart, Sparkles, Send } from 'lucide-react';
+import { HOST_PHONE } from '../../config';
 import { WeddingTheme } from '../../themes/themes';
 import { FullRsvpState, WeddingSide } from '../../utils/rsvpTypes';
 import { sanitizePlainText } from '../../utils/rsvpLogic';
@@ -46,14 +47,14 @@ export const Step1KaunAaRahaHai: React.FC<Step1Props> = ({
     let hasError = false;
 
     if (!state.primaryName.trim() || state.primaryName.trim().length < 2) {
-      setErrorName('Kripya apna naam darj karein (at least 2 letters)');
+      setErrorName('Please enter your name (at least 2 characters)');
       hasError = true;
     } else {
       setErrorName('');
     }
 
     if (!state.phone.trim() || state.phone.replace(/[^0-9]/g, '').length < 8) {
-      setErrorPhone('Kripya valid phone number darj karein');
+      setErrorPhone('Please enter a valid phone number');
       hasError = true;
     } else {
       setErrorPhone('');
@@ -155,7 +156,7 @@ export const Step1KaunAaRahaHai: React.FC<Step1Props> = ({
               updateState({ phone: val });
               if (errorPhone) setErrorPhone('');
             }}
-            placeholder="e.g. 9876543210"
+            placeholder={`e.g. ${HOST_PHONE}`}
             className="w-full text-base min-h-[48px] px-4 py-2.5 rounded-2xl font-english border focus:outline-none focus:ring-2"
             style={{
               backgroundColor: `${theme.base}F2`,

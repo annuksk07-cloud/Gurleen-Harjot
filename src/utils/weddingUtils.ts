@@ -103,6 +103,7 @@ export function generateIcsContent(config: WeddingConfig, langCode?: string): st
     scheduleSummary,
     '',
     `Venue Maps: ${config.PRIMARY_VENUE.mapsUrl}`,
+    `Host Contact: ${config.HOST_PHONE_DISPLAY}`,
     `Hashtag: ${config.HASHTAG}`,
   ].join('\\n');
 

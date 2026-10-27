@@ -11,6 +11,10 @@ import {
   buildWhatsAppRsvpMessage,
 } from '../utils/rsvpLogic';
 import { formatPersonalisedLine } from '../utils/relativeMatching';
+import {
+  formatManualSendToast,
+  getContactTranslations,
+} from '../i18n/contactTranslations';
 import { RsvpProgressRail } from './rsvp/RsvpProgressRail';
 import { Step1KaunAaRahaHai } from './rsvp/Step1KaunAaRahaHai';
 import { Step2Parivaar } from './rsvp/Step2Parivaar';
@@ -199,16 +203,7 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
       if (typeof navigator !== 'undefined' && navigator.clipboard) {
         navigator.clipboard.writeText(waResult.fullText).catch(() => {});
       }
-      showToast(
-        activeGuestForToast
-          ? formatPersonalisedLine(
-              dict?.rsvpToastCopy_guest || 'Thank you, {guest}! Your RSVP details have been copied.',
-              activeGuestForToast
-            )
-          : langCode === 'en'
-            ? 'Full RSVP details copied to clipboard!'
-            : 'Poora data copy ho gaya, chat mein paste kar dein'
-      );
+      showToast(getContactTranslations(langCode).fullDetailsCopiedToast);
     } else {
       showToast(
         activeGuestForToast
@@ -241,20 +236,12 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
     try {
       if (typeof navigator !== 'undefined' && navigator.clipboard) {
         await navigator.clipboard.writeText(waResult.fullText);
-        showToast(
-          activeGuestForToast
-            ? formatPersonalisedLine(
-                dict?.rsvpToastCopy_guest ||
-                  'Thank you, {guest}! Your RSVP details have been copied.',
-                activeGuestForToast
-              )
-            : langCode === 'en'
-              ? 'RSVP details copied to clipboard!'
-              : '📋 RSVP details clipboard par copy ho gayi hain!'
-        );
+        showToast(getContactTranslations(langCode).fullDetailsCopiedToast);
+      } else {
+        showToast(formatManualSendToast(langCode, config));
       }
     } catch {
-      showToast(langCode === 'en' ? 'Could not copy details.' : 'Copy karne mein samasya aayi.');
+      showToast(formatManualSendToast(langCode, config));
     }
   };
 
@@ -387,8 +374,8 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({
                 </span>
                 <p className="mt-0.5 opacity-90">
                   {langCode === 'en'
-                    ? 'The RSVP date has passed, but you are very special to us! Please still send your details so we can arrange your stay and meals.'
-                    : 'Tareekh nikal chuki hai, par aap hamare khaas hain! Kripya apni details zaroor bhej dein taaki hum catering aur stay adjust kar sakein.'}
+                    ? `The RSVP date has passed, but you are very special to us! Please still send your details to ${config.HOST_PHONE_DISPLAY} so we can arrange your stay and meals.`
+                    : `Tareekh nikal chuki hai, par aap hamare khaas hain! Kripya apni details ${config.HOST_PHONE_DISPLAY} par zaroor bhej dein taaki hum catering aur stay adjust kar sakein.`}
                 </p>
               </div>
             </div>

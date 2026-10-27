@@ -6,6 +6,7 @@ import { TranslationDictionary } from '../i18n/translations';
 import { THEMES, WeddingTheme } from '../themes/themes';
 import { resolvePersonalNote } from '../utils/relativeMatching';
 import { useReveal } from '../hooks/useReveal';
+import { buildHostWhatsAppHref, getContactTranslations } from '../i18n/contactTranslations';
 
 export interface NoteSectionProps {
   config: WeddingConfig;
@@ -124,10 +125,10 @@ export const NoteSection: React.FC<NoteSectionProps> = ({
   };
 
   const isHi = langCode === 'hi';
+  const contactT = getContactTranslations(langCode);
   const replySender = (savedName || resolvedNote.displayName || 'Guest').trim();
   const replyText = `Thank you for your lovely message! - ${replySender}`;
-  const cleanPhone = (config?.RSVP_WHATSAPP_NUMBER || '919876543210').replace(/[^0-9]/g, '');
-  const whatsappHref = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(replyText)}`;
+  const whatsappHref = buildHostWhatsAppHref(replyText, config);
 
   const celebrationCaptions = [
     dict?.event1ScriptTitle || 'Haldi',
@@ -571,6 +572,7 @@ export const NoteSection: React.FC<NoteSectionProps> = ({
                   href={whatsappHref}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label={`${contactT.replyWithLove} (${config.HOST_PHONE_DISPLAY})`}
                   data-testid="note-reply-btn"
                   className="theme-btn min-h-[44px] px-5 py-2.5 rounded-full font-english text-xs uppercase tracking-[0.14em] font-medium inline-flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
                   style={{
@@ -579,7 +581,7 @@ export const NoteSection: React.FC<NoteSectionProps> = ({
                   }}
                 >
                   <MessageCircleHeart className="w-4 h-4 shrink-0" aria-hidden="true" />
-                  <span>{isHi ? 'प्यार के साथ जवाब दें' : 'Reply with love'}</span>
+                  <span>{contactT.replyWithLove}</span>
                 </a>
 
                 <button

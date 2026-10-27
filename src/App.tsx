@@ -5,7 +5,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
-import { MapPin, CalendarPlus, Check } from 'lucide-react';
+import { MapPin, CalendarPlus, Check, Phone, MessageCircle } from 'lucide-react';
 import { WEDDING_CONFIG } from './config';
 import { HeroOpening } from './components/HeroOpening';
 import { NoteSection } from './components/NoteSection';
@@ -50,6 +50,11 @@ import {
 } from './themes/themes';
 import { ambientAudio } from './utils/ambientAudio';
 import { formatPersonalisedLine, getGuestDisplayName } from './utils/relativeMatching';
+import {
+  buildHostTelHref,
+  buildHostWhatsAppHref,
+  getContactTranslations,
+} from './i18n/contactTranslations';
 
 /**
  * ============================================================================
@@ -916,7 +921,7 @@ export default function App() {
                 style={{ color: activeTheme.button }}
               >
                 {dict.venueLandmark} · {dict.venueConciergeLabel}:{' '}
-                {CONFIG.PRIMARY_VENUE.contactPhoneDisplay}
+                <span dir="ltr">{CONFIG.HOST_PHONE_DISPLAY}</span>
               </p>
 
               <div className="w-full space-y-3">
@@ -933,6 +938,41 @@ export default function App() {
                   <MapPin className="w-4 h-4" />
                   <span>{dict.openInMaps}</span>
                 </a>
+
+                {/* Two host contact buttons under the map button */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <a
+                    href={buildHostTelHref(CONFIG)}
+                    data-testid="venue-call-directions-btn"
+                    aria-label={`${getContactTranslations(activeLangCode).callForDirections} (${CONFIG.HOST_PHONE_DISPLAY})`}
+                    className="theme-btn w-full min-h-[46px] px-4 py-2.5 rounded-full border font-english text-xs uppercase tracking-[0.12em] flex items-center justify-center gap-2 transition-all"
+                    style={{
+                      backgroundColor: activeTheme.base,
+                      color: activeTheme.text,
+                      borderColor: `${activeTheme.goldStart}B3`,
+                    }}
+                  >
+                    <Phone className="w-4 h-4 shrink-0" style={{ color: activeTheme.button }} aria-hidden="true" />
+                    <span>{getContactTranslations(activeLangCode).callForDirections}</span>
+                  </a>
+
+                  <a
+                    href={buildHostWhatsAppHref('Hello, I need help finding the venue', CONFIG)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid="venue-whatsapp-us-btn"
+                    aria-label={`${getContactTranslations(activeLangCode).whatsappUs} (${CONFIG.HOST_PHONE_DISPLAY})`}
+                    className="theme-btn w-full min-h-[46px] px-4 py-2.5 rounded-full border font-english text-xs uppercase tracking-[0.12em] flex items-center justify-center gap-2 transition-all"
+                    style={{
+                      backgroundColor: activeTheme.base,
+                      color: activeTheme.text,
+                      borderColor: `${activeTheme.goldStart}B3`,
+                    }}
+                  >
+                    <MessageCircle className="w-4 h-4 shrink-0" style={{ color: activeTheme.button }} aria-hidden="true" />
+                    <span>{getContactTranslations(activeLangCode).whatsappUs}</span>
+                  </a>
+                </div>
 
                 <button
                   type="button"
@@ -1193,6 +1233,53 @@ export default function App() {
             >
               {dict.footerClosingLine}
             </p>
+
+            {/* Footer Host Contact Block */}
+            <div
+              data-testid="footer-contact-block"
+              className="mt-6 w-full max-w-[420px] rounded-2xl border px-4 py-4 flex flex-col items-center gap-2.5 shadow-xs"
+              style={{
+                backgroundColor: `${activeTheme.base}E6`,
+                borderColor: `${activeTheme.goldStart}80`,
+                color: activeTheme.text,
+              }}
+            >
+              <p className="font-heading-serif italic text-base sm:text-lg font-medium">
+                {getContactTranslations(activeLangCode).footerQuestionsLine}
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-2.5 w-full">
+                <a
+                  href={buildHostTelHref(CONFIG)}
+                  data-testid="footer-call-link"
+                  aria-label={`${getContactTranslations(activeLangCode).callHostAria}: ${CONFIG.HOST_PHONE_DISPLAY}`}
+                  className="min-h-[44px] px-4 py-2 rounded-full border font-english text-xs font-medium inline-flex items-center justify-center gap-2 transition-all"
+                  style={{
+                    backgroundColor: activeTheme.base,
+                    borderColor: `${activeTheme.goldStart}99`,
+                    color: activeTheme.text,
+                  }}
+                >
+                  <Phone className="w-3.5 h-3.5 shrink-0" style={{ color: activeTheme.button }} aria-hidden="true" />
+                  <span dir="ltr">{CONFIG.HOST_PHONE_DISPLAY}</span>
+                </a>
+
+                <a
+                  href={buildHostWhatsAppHref('Hello, I have a question about the wedding invitation', CONFIG)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-testid="footer-whatsapp-btn"
+                  aria-label={`${getContactTranslations(activeLangCode).whatsappUs} (${CONFIG.HOST_PHONE_DISPLAY})`}
+                  className="theme-btn min-h-[44px] px-4 py-2 rounded-full font-english text-xs uppercase tracking-[0.12em] font-medium inline-flex items-center justify-center gap-2 shadow-xs transition-all"
+                  style={{
+                    backgroundColor: activeTheme.button,
+                    color: activeTheme.base,
+                  }}
+                >
+                  <MessageCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                  <span>{getContactTranslations(activeLangCode).whatsappUs}</span>
+                </a>
+              </div>
+            </div>
 
             <p
               className="font-english text-[10px] tracking-wider uppercase opacity-60 cream-text-glow mt-4"
