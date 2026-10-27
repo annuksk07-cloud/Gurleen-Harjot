@@ -24,6 +24,7 @@ interface HeroOpeningProps {
   onChangeName?: () => void;
   onOpenLanguageSheet: () => void;
   onOpenInvitation?: () => void;
+  onRevealComplete?: () => void;
   onScrollToInvite: () => void;
 }
 
@@ -158,6 +159,7 @@ export const HeroOpening: React.FC<HeroOpeningProps> = ({
   onChangeName,
   onOpenLanguageSheet,
   onOpenInvitation,
+  onRevealComplete,
   onScrollToInvite,
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -203,6 +205,13 @@ export const HeroOpening: React.FC<HeroOpeningProps> = ({
   useEffect(() => {
     setVideoFailed(!config.VIDEO_SRC);
   }, [config.VIDEO_SRC]);
+
+  useEffect(() => {
+    if (isOpened && isRevealed) {
+      onRevealComplete?.();
+      window.dispatchEvent(new CustomEvent('sarson-subah:hero-revealed'));
+    }
+  }, [isOpened, isRevealed, onRevealComplete]);
 
   // Listen for "Reset demo" event to return cleanly to Stage A
   useEffect(() => {

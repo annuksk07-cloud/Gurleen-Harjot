@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
-import { Palette, X, Check, Globe, Music, Shuffle } from 'lucide-react';
+import { Palette, X, Check, Globe, Music, Shuffle, Download } from 'lucide-react';
 import {
   getRandomDifferentThemeId,
   THEME_ORDER,
@@ -10,6 +10,7 @@ import {
   WeddingTheme,
 } from '../themes/themes';
 import { TranslationDictionary } from '../i18n/translations';
+import { getPwaTranslations } from '../i18n/pwaTranslations';
 import { ambientAudio } from '../utils/ambientAudio';
 
 /**
@@ -176,17 +177,21 @@ interface BottomDockProps {
   activeTheme: WeddingTheme;
   isMuted: boolean;
   dict: TranslationDictionary;
+  langCode?: string;
+  showInstallItem?: boolean;
   onOpenLanguageSheet: () => void;
   onOpenThemeSheet: () => void;
   onToggleMusic: () => void;
+  onInstallApp?: () => void;
 }
 
 /**
  * Centered bottom dock above the safe area, rendered AFTER the guest taps "Tap to open invitation".
- * - Cream glass with a hairline, 56px high, 3 buttons >= 44px:
+ * - Cream glass with a hairline, 56px high, buttons >= 44px:
  *   1. Language (globe + native name)
  *   2. Theme (palette + current theme name, truncated)
  *   3. Music (note icon with equalizer bars while playing)
+ *   4. Install app (when not in standalone mode)
  * - Slides down while scrolling down and whenever an input, textarea, or select is focused;
  *   returns on scroll up or after 1.2s idle.
  */
@@ -196,9 +201,12 @@ export const BottomDock: React.FC<BottomDockProps> = ({
   activeTheme,
   isMuted,
   dict,
+  langCode = 'en',
+  showInstallItem = true,
   onOpenLanguageSheet,
   onOpenThemeSheet,
   onToggleMusic,
+  onInstallApp,
 }) => {
   const [isHiddenByScroll, setIsHiddenByScroll] = useState(false);
   const [isHiddenByFocus, setIsHiddenByFocus] = useState(false);
@@ -285,7 +293,7 @@ export const BottomDock: React.FC<BottomDockProps> = ({
         opacity: isDockSlidDown ? 0 : 1,
       }}
       transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-      className="fixed left-1/2 -translate-x-1/2 z-[75] h-[56px] px-2 flex items-center gap-1 sm:gap-1.5 gold-glass-card shadow-lg max-w-[calc(100vw-20px)]"
+      className="fixed left-1/2 -translate-x-1/2 z-[75] h-[56px] px-1.5 sm:px-2.5 flex items-center gap-0.5 sm:gap-1.5 gold-glass-card shadow-lg max-w-[calc(100vw-16px)]"
       style={{
         bottom: 'max(12px, calc(env(safe-area-inset-bottom) + 8px))',
         backgroundColor: `${activeTheme.base}EB`,
@@ -300,12 +308,12 @@ export const BottomDock: React.FC<BottomDockProps> = ({
         data-testid="dock-language-button"
         onClick={onOpenLanguageSheet}
         aria-label={`${dict.languageChipLabel}: ${activeNativeName}`}
-        className="h-[44px] min-h-[44px] min-w-[44px] px-3 rounded-full flex items-center gap-1.5 hover:bg-black/5 active:scale-95 transition-all cursor-pointer"
+        className="h-[44px] min-h-[44px] min-w-[44px] px-2 sm:px-3 rounded-full flex items-center gap-1.5 shrink-0 hover:bg-black/5 active:scale-95 transition-all cursor-pointer"
         style={{ color: activeTheme.text }}
       >
-        <Globe className="w-4 h-4 shrink-0" style={{ color: activeTheme.button }} aria-hidden="true" />
+        <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" style={{ color: activeTheme.button }} aria-hidden="true" />
         <span
-          className="text-xs font-medium whitespace-nowrap max-w-[84px] truncate"
+          className="text-xs font-medium whitespace-nowrap"
           style={{ fontFamily: `var(--font-active-script), 'Jost', sans-serif` }}
         >
           {activeNativeName}
@@ -324,11 +332,11 @@ export const BottomDock: React.FC<BottomDockProps> = ({
         data-testid="dock-theme-button"
         onClick={onOpenThemeSheet}
         aria-label={`${dict.themeSheetTitle}: ${activeTheme.name}`}
-        className="h-[44px] min-h-[44px] min-w-[44px] px-3 rounded-full flex items-center gap-1.5 hover:bg-black/5 active:scale-95 transition-all cursor-pointer"
+        className="h-[44px] min-h-[44px] min-w-[44px] px-2 sm:px-3 rounded-full flex items-center gap-1.5 min-w-0 hover:bg-black/5 active:scale-95 transition-all cursor-pointer"
         style={{ color: activeTheme.text }}
       >
-        <Palette className="w-4 h-4 shrink-0" style={{ color: activeTheme.button }} aria-hidden="true" />
-        <span className="font-english text-xs font-medium max-w-[96px] sm:max-w-[116px] truncate">
+        <Palette className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" style={{ color: activeTheme.button }} aria-hidden="true" />
+        <span className="font-english text-xs font-medium max-w-[92px] sm:max-w-[116px] truncate">
           {activeTheme.name}
         </span>
       </button>
@@ -346,11 +354,11 @@ export const BottomDock: React.FC<BottomDockProps> = ({
         onClick={onToggleMusic}
         aria-label={isMuted ? dict.unmuteMusic : dict.muteMusic}
         aria-pressed={!isMuted}
-        className="h-[44px] min-h-[44px] min-w-[48px] px-2.5 rounded-full flex items-center justify-center gap-1.5 hover:bg-black/5 active:scale-95 transition-all cursor-pointer"
+        className="h-[44px] min-h-[44px] min-w-[44px] px-2 rounded-full flex items-center justify-center gap-1 shrink-0 hover:bg-black/5 active:scale-95 transition-all cursor-pointer"
         style={{ color: activeTheme.text }}
       >
         <Music
-          className="w-4 h-4 shrink-0"
+          className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0"
           style={{ color: isMuted ? `${activeTheme.text}80` : activeTheme.button }}
           aria-hidden="true"
         />
@@ -382,6 +390,37 @@ export const BottomDock: React.FC<BottomDockProps> = ({
           ))}
         </span>
       </button>
+
+      {/* 4. Install App Item (hidden when already installed in standalone mode) */}
+      {showInstallItem && onInstallApp && (
+        <>
+          <span
+            aria-hidden="true"
+            className="w-[1px] h-6 shrink-0"
+            style={{ backgroundColor: `${activeTheme.goldStart}55` }}
+          />
+          <button
+            type="button"
+            data-testid="dock-install-button"
+            onClick={onInstallApp}
+            aria-label={getPwaTranslations(langCode).installApp}
+            className="h-[44px] min-h-[44px] min-w-[44px] px-2 sm:px-3 rounded-full flex items-center gap-1.5 shrink-0 hover:bg-black/5 active:scale-95 transition-all cursor-pointer"
+            style={{ color: activeTheme.text }}
+          >
+            <Download
+              className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0"
+              style={{ color: activeTheme.button }}
+              aria-hidden="true"
+            />
+            <span
+              className="text-xs font-medium whitespace-nowrap"
+              style={{ fontFamily: `var(--font-active-script), 'Jost', sans-serif` }}
+            >
+              {getPwaTranslations(langCode).installApp}
+            </span>
+          </button>
+        </>
+      )}
     </motion.nav>
   );
 };

@@ -1094,6 +1094,10 @@ export function applyThemeCssVariables(theme: WeddingTheme): void {
   root.dataset.themeEntrance = theme.entrance;
   root.dataset.themeDensity = theme.density;
   root.dataset.themeOrnament = String(theme.ornamentLevel);
+  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeColorMeta) {
+    themeColorMeta.setAttribute('content', theme.base);
+  }
   syncActiveThemeFont(theme);
 }
 

@@ -101,7 +101,34 @@ ${JSON.stringify(sourceDictionary)}`;
     }
   });
 
+  const publicPath = path.join(__dirname, 'public');
+
+  app.get('/sw.js', (_req, res) => {
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Service-Worker-Allowed', '/');
+    res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+    res.sendFile(path.join(publicPath, 'sw.js'));
+  });
+
+  app.get('/manifest.webmanifest', (_req, res) => {
+    res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
+    res.sendFile(path.join(publicPath, 'manifest.webmanifest'));
+  });
+
+  app.use(
+    '/icons',
+    express.static(path.join(publicPath, 'icons'), {
+      setHeaders: (res) => {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      },
+    })
+  );
+
   if (process.env.NODE_ENV !== 'production') {
+    app.get('/icon-maker.html', (_req, res) => {
+      res.sendFile(path.join(publicPath, 'icon-maker.html'));
+    });
+    app.use(express.static(publicPath));
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -111,6 +138,7 @@ ${JSON.stringify(sourceDictionary)}`;
   } else {
     const distPath = path.join(__dirname, 'dist');
     app.use(express.static(distPath));
+    app.use(express.static(publicPath));
     app.get('*', (_req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });

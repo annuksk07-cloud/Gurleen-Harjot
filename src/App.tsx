@@ -19,7 +19,16 @@ import { RsvpSection } from './components/RsvpSection';
 import { WelcomePopup } from './components/WelcomePopup';
 import { LanguageSheet } from './components/LanguageSheet';
 import { BottomDock, ThemeController } from './components/ThemeController';
+import { BeforeInstallPromptEvent, PWAInstallCard } from './components/PWAInstallCard';
 import { generateIcsContent } from './utils/weddingUtils';
+import {
+  clearPwaDismissal,
+  detectIsIOS,
+  detectIsStandalone,
+  getPwaTranslations,
+  isPwaDismissedRecently,
+  persistPwaDismissal,
+} from './i18n/pwaTranslations';
 import {
   CustomLanguageRecord,
   detectInitialLanguage,
@@ -130,6 +139,21 @@ export default function App() {
     }
     return false;
   });
+  const [isHeroRevealed, setIsHeroRevealed] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('autostart') === '1';
+    }
+    return false;
+  });
+
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isStandalone, setIsStandalone] = useState<boolean>(() => detectIsStandalone());
+  const [isIOS] = useState<boolean>(() => detectIsIOS());
+  const [pwaCardDismissed, setPwaCardDismissed] = useState<boolean>(() => isPwaDismissedRecently());
+  const [pwaManualHintOpen, setPwaManualHintOpen] = useState<boolean>(false);
+  const [pwaInstalledToast, setPwaInstalledToast] = useState<boolean>(false);
+  const [pwaUpdateToast, setPwaUpdateToast] = useState<boolean>(false);
 
   const [isLanguageSheetOpen, setIsLanguageSheetOpen] = useState(false);
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
@@ -165,6 +189,55 @@ export default function App() {
       if (toastTimerRef.current) {
         window.clearTimeout(toastTimerRef.current);
       }
+    };
+  }, []);
+
+  // Capture beforeinstallprompt, appinstalled, standalone display-mode changes, and SW updates
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+
+    let installedTimer: number | null = null;
+    const handleAppInstalled = () => {
+      setIsStandalone(true);
+      setDeferredPrompt(null);
+      setPwaManualHintOpen(false);
+      setPwaInstalledToast(true);
+      if (installedTimer) window.clearTimeout(installedTimer);
+      installedTimer = window.setTimeout(() => {
+        setPwaInstalledToast(false);
+      }, 4000);
+    };
+
+    const handleSwUpdateReady = () => {
+      setPwaUpdateToast(true);
+    };
+
+    const mq =
+      typeof window.matchMedia === 'function'
+        ? window.matchMedia('(display-mode: standalone)')
+        : null;
+    const handleDisplayModeChange = (ev: MediaQueryListEvent) => {
+      if (ev.matches) {
+        setIsStandalone(true);
+      }
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+    window.addEventListener('sarson-subah:sw-update-ready', handleSwUpdateReady);
+    mq?.addEventListener?.('change', handleDisplayModeChange);
+
+    return () => {
+      if (installedTimer) window.clearTimeout(installedTimer);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+      window.removeEventListener('sarson-subah:sw-update-ready', handleSwUpdateReady);
+      mq?.removeEventListener?.('change', handleDisplayModeChange);
     };
   }, []);
 
@@ -350,6 +423,32 @@ export default function App() {
     setShowWelcomePopup(true);
   };
 
+  const handleTriggerPwaInstall = async () => {
+    if (deferredPrompt) {
+      try {
+        await deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if (choice.outcome === 'accepted') {
+          setDeferredPrompt(null);
+          setPwaCardDismissed(true);
+          setPwaManualHintOpen(false);
+        }
+      } catch {
+        setPwaCardDismissed(false);
+        setPwaManualHintOpen(true);
+      }
+    } else {
+      setPwaCardDismissed(false);
+      setPwaManualHintOpen(true);
+    }
+  };
+
+  const handleDismissPwaCard = () => {
+    persistPwaDismissal();
+    setPwaCardDismissed(true);
+    setPwaManualHintOpen(false);
+  };
+
   const handleResetDemo = () => {
     try {
       window.localStorage.removeItem('guest_name');
@@ -358,9 +457,13 @@ export default function App() {
     } catch {
       // Ignore storage error
     }
+    clearPwaDismissal();
     window.dispatchEvent(new CustomEvent('sarson-subah:reset-scratch'));
     window.dispatchEvent(new CustomEvent('sarson-subah:reset-hero'));
     setIsInvitationOpened(false);
+    setIsHeroRevealed(false);
+    setPwaCardDismissed(false);
+    setPwaManualHintOpen(false);
     setSavedName(null);
     setHasSkippedWelcome(false);
     setNoteToastVisible(false);
@@ -482,6 +585,54 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      {/* Toast: "Added to your home screen" on appinstalled */}
+      <AnimatePresence>
+        {pwaInstalledToast && (
+          <motion.div
+            key="pwa-installed-toast"
+            data-testid="pwa-installed-toast"
+            role="status"
+            aria-live="polite"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ duration: 0.28 }}
+            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[96] px-5 py-2.5 rounded-full shadow-lg border font-english text-xs sm:text-sm font-medium whitespace-nowrap pointer-events-none"
+            style={{
+              backgroundColor: activeTheme.button,
+              color: activeTheme.base,
+              borderColor: `${activeTheme.goldEnd}AA`,
+            }}
+          >
+            {getPwaTranslations(activeLangCode).addedToast}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Toast: "A new version is ready, tap to refresh" when new SW takes over */}
+      <AnimatePresence>
+        {pwaUpdateToast && (
+          <motion.button
+            type="button"
+            key="pwa-update-toast"
+            data-testid="pwa-update-toast"
+            onClick={() => window.location.reload()}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ duration: 0.28 }}
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-[98] px-5 py-2.5 rounded-full shadow-lg border font-english text-xs sm:text-sm font-medium whitespace-nowrap cursor-pointer active:scale-95 transition-transform"
+            style={{
+              backgroundColor: activeTheme.button,
+              color: activeTheme.base,
+              borderColor: `${activeTheme.goldEnd}AA`,
+            }}
+          >
+            {getPwaTranslations(activeLangCode).updateReadyToast}
+          </motion.button>
+        )}
+      </AnimatePresence>
+
       {/* Style Chooser Bottom Sheet */}
       <ThemeController
         activeTheme={activeTheme}
@@ -495,6 +646,18 @@ export default function App() {
         onPagePulse={handleTriggerPagePulse}
       />
 
+      {/* Dismissible PWA Install Card above the Dock (after opening video ends) */}
+      <PWAInstallCard
+        visible={!isStandalone && isHeroRevealed && (!pwaCardDismissed || pwaManualHintOpen)}
+        isIOS={isIOS}
+        hasDeferredPrompt={Boolean(deferredPrompt)}
+        showManualHint={pwaManualHintOpen}
+        langCode={activeLangCode}
+        theme={activeTheme}
+        onInstall={handleTriggerPwaInstall}
+        onDismiss={handleDismissPwaCard}
+      />
+
       {/* Centered Bottom Dock */}
       <BottomDock
         visible={isInvitationOpened}
@@ -502,9 +665,12 @@ export default function App() {
         activeTheme={activeTheme}
         isMuted={isMuted}
         dict={dict}
+        langCode={activeLangCode}
+        showInstallItem={!isStandalone}
         onOpenLanguageSheet={() => setIsLanguageSheetOpen(true)}
         onOpenThemeSheet={() => setIsThemeSheetOpen(true)}
         onToggleMusic={handleToggleMusic}
+        onInstallApp={handleTriggerPwaInstall}
       />
 
       {/* Full-Width Responsive Invitation Main Container */}
@@ -533,6 +699,7 @@ export default function App() {
           onChangeName={handleChangeGuestName}
           onOpenLanguageSheet={() => setIsLanguageSheetOpen(true)}
           onOpenInvitation={() => setIsInvitationOpened(true)}
+          onRevealComplete={() => setIsHeroRevealed(true)}
           onScrollToInvite={scrollToInvitation}
         />
 
@@ -970,8 +1137,9 @@ export default function App() {
         {/* FOOTER */}
         <footer
           aria-label="Wedding Invitation Closing Footer"
-          className="relative w-full px-4 sm:px-6 pt-12 pb-[88px] text-center overflow-hidden theme-surface-transition"
+          className="relative w-full px-4 sm:px-6 pt-12 text-center overflow-hidden theme-surface-transition"
           style={{
+            paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))',
             background: `linear-gradient(180deg, ${activeTheme.base} 0%, ${activeTheme.goldEnd} 45%, ${activeTheme.tint1} 100%)`,
           }}
         >
