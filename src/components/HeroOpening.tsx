@@ -6,7 +6,6 @@ import { FallingPetalsCanvas } from './FallingPetalsCanvas';
 import { ambientAudio } from '../utils/ambientAudio';
 import {
   getLanguageMeta,
-  getLocalizedGreeting,
   TranslationDictionary,
 } from '../i18n/translations';
 import { THEMES, WeddingTheme } from '../themes/themes';
@@ -30,15 +29,17 @@ interface HeroOpeningProps {
 
 interface GuestNamePlateProps {
   guestDisplayName: string;
-  welcomeLabel: string;
+  plateLabel: string;
   langCode: string;
+  delay?: number;
   onClick?: () => void;
 }
 
 const GuestNamePlate: React.FC<GuestNamePlateProps> = ({
   guestDisplayName,
-  welcomeLabel,
+  plateLabel,
   langCode,
+  delay = 0,
   onClick,
 }) => {
   const isDevanagari = langCode === 'hi' || langCode === 'mr' || langCode === 'bho';
@@ -58,9 +59,9 @@ const GuestNamePlate: React.FC<GuestNamePlateProps> = ({
         e.stopPropagation();
         onClick?.();
       }}
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.55, delay, ease: [0.16, 1, 0.3, 1] }}
       style={{
         width: 'min(86%, 360px)',
         backgroundColor: 'rgba(255, 248, 236, 0.88)',
@@ -68,7 +69,7 @@ const GuestNamePlate: React.FC<GuestNamePlateProps> = ({
         boxShadow: '0 8px 26px rgba(62, 36, 48, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.85)',
       }}
       className="relative overflow-hidden rounded-full px-4 py-2.5 backdrop-blur-md flex items-center justify-between gap-3 cursor-pointer active:scale-[0.98] transition-transform mx-auto"
-      aria-label={`${welcomeLabel} ${guestDisplayName}`}
+      aria-label={`${plateLabel} ${guestDisplayName}`}
     >
       {/* Soft shimmer sweep every 6s */}
       <motion.span
@@ -100,9 +101,10 @@ const GuestNamePlate: React.FC<GuestNamePlateProps> = ({
         <Heart className="w-3.5 h-3.5 fill-[#FFF8EC] text-[#FFF8EC]" />
       </span>
 
-      {/* Center: Tiny caps WELCOME + Guest Name in display font at 28px */}
+      {/* Center: Small caps label + Guest Name in display font at 28px */}
       <span className="relative z-10 flex-1 min-w-0 flex flex-col items-center text-center leading-tight">
         <span
+          data-testid="hero-guest-name-plate-label"
           className="font-english uppercase font-semibold block"
           style={{
             fontSize: '13px',
@@ -110,13 +112,13 @@ const GuestNamePlate: React.FC<GuestNamePlateProps> = ({
             color: '#9A6A22',
           }}
         >
-          {welcomeLabel}
+          {plateLabel}
         </span>
         <motion.span
           key={guestDisplayName}
           initial={{ clipPath: 'inset(-25% 100% -25% 0%)', opacity: 0.4 }}
           animate={{ clipPath: 'inset(-25% 0% -25% 0%)', opacity: 1 }}
-          transition={{ duration: 1.15, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 1.15, delay, ease: [0.22, 1, 0.36, 1] }}
           className="block truncate w-full py-1"
           style={{
             fontFamily: nameFontFamily,
@@ -193,12 +195,33 @@ export const HeroOpening: React.FC<HeroOpeningProps> = ({
       : `var(--font-active-script), '${langMeta.googleFontFamily || 'Cormorant Garamond'}', serif`;
 
   const guestDisplayName = getGuestDisplayName(savedName, langCode);
+  const invitationForLabel =
+    dict.heroInvitationForLabel || (langCode === 'hi' ? 'आपके लिए निमंत्रण' : 'INVITATION FOR');
   const welcomeLabel = dict.heroWelcomeLabel || (langCode === 'hi' ? 'स्वागत है' : 'WELCOME');
   const heroTaglineText = dict.heroTagline || 'Two hearts, one golden morning';
 
   useEffect(() => {
     setVideoFailed(!config.VIDEO_SRC);
   }, [config.VIDEO_SRC]);
+
+  // Listen for "Reset demo" event to return cleanly to Stage A
+  useEffect(() => {
+    const handleResetHero = () => {
+      setIsOpened(false);
+      setIsRevealed(false);
+      const videoEl = videoRef.current;
+      if (videoEl) {
+        videoEl.pause();
+        try {
+          videoEl.currentTime = 0.001;
+        } catch {
+          // Ignore seek error
+        }
+      }
+    };
+    window.addEventListener('sarson-subah:reset-hero', handleResetHero);
+    return () => window.removeEventListener('sarson-subah:reset-hero', handleResetHero);
+  }, []);
 
   // Sync video muted state if toggled via BottomDock
   useEffect(() => {
@@ -275,21 +298,21 @@ export const HeroOpening: React.FC<HeroOpeningProps> = ({
     } else {
       window.setTimeout(() => {
         setIsRevealed(true);
-      }, 300);
+      }, 400);
     }
   };
 
-  // Fallback timer to ensure text reveals at REVEAL_DELAY_SECONDS (default 8.0s for 10s video)
+  // 10s failsafe timer to reveal Stage B if video fails to end, play, or load
   useEffect(() => {
-    if (!isOpened) return;
+    if (!isOpened || isRevealed) return;
 
-    const revealMs = (config.REVEAL_DELAY_SECONDS || 8.0) * 1000;
+    const failsafeMs = hasValidVideo ? 10000 : 400;
     const timer = window.setTimeout(() => {
       setIsRevealed(true);
-    }, hasValidVideo ? revealMs : 300);
+    }, failsafeMs);
 
     return () => window.clearTimeout(timer);
-  }, [isOpened, hasValidVideo, config.REVEAL_DELAY_SECONDS]);
+  }, [isOpened, isRevealed, hasValidVideo]);
 
   return (
     <section
@@ -384,6 +407,7 @@ export const HeroOpening: React.FC<HeroOpeningProps> = ({
         {/* Full-Screen 9:16 Video Element — Paused on first frame (closed envelope) on load, never autoplay */}
         <video
           ref={videoRef}
+          data-testid="hero-main-video"
           src={config.VIDEO_SRC || undefined}
           poster={config.POSTER_SRC || undefined}
           muted
@@ -401,15 +425,16 @@ export const HeroOpening: React.FC<HeroOpeningProps> = ({
               }
             }
           }}
-          onTimeUpdate={(e) => {
-            if (!isOpened) return;
-            const current = e.currentTarget.currentTime;
-            if (current >= (config.REVEAL_DELAY_SECONDS || 8.0) && !isRevealed) {
-              setIsRevealed(true);
-            }
-          }}
           onEnded={(e) => {
-            e.currentTarget.pause();
+            const vid = e.currentTarget;
+            vid.pause();
+            try {
+              if (Number.isFinite(vid.duration) && vid.duration > 0.2 && vid.currentTime < vid.duration - 0.1) {
+                vid.currentTime = vid.duration - 0.05;
+              }
+            } catch {
+              // Ignore seek errors
+            }
             setIsRevealed(true);
           }}
           onError={() => {
@@ -430,118 +455,120 @@ export const HeroOpening: React.FC<HeroOpeningProps> = ({
           />
         )}
 
-        {/* Before the guest taps "Tap to open invitation": ONLY the language chip at the top-left of the opening screen */}
-        <div
-          dir="ltr"
-          className="relative z-40 flex items-center justify-start px-4 sm:px-5 pt-safe mt-3 min-h-[44px]"
-        >
-          {!isOpened && (
-            <button
-              type="button"
-              data-testid="hero-language-chip"
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenLanguageSheet();
-              }}
-              aria-label={`${dict.languageChipLabel}: ${activeNativeName}`}
-              className="h-[44px] min-h-[44px] px-3.5 rounded-full flex items-center gap-2 backdrop-blur-md shadow-sm active:scale-95 transition-all cursor-pointer"
-              style={{
-                backgroundColor: `${theme.base}D9`,
-                border: `1px solid ${theme.goldStart}99`,
-                color: theme.text,
-              }}
-            >
-              <Globe className="w-4 h-4 shrink-0" style={{ color: theme.button }} aria-hidden="true" />
-              <span
-                className="font-medium tracking-wide whitespace-nowrap"
-                style={{
-                  fontSize: '13px',
-                  fontFamily: `var(--font-active-script), 'Jost', sans-serif`,
-                }}
-              >
-                {activeNativeName}
-              </span>
-            </button>
-          )}
-        </div>
-
         {/* ===================================================================
-            PRE-TAP ENVELOPE OVERLAY (Stays inside the 9:16 video frame)
-            Leaves the central golden wax seal completely uncovered.
+            STAGE A: PRE-TAP ENVELOPE OVERLAY (Closed Envelope)
+            Shows ONLY:
+            1. Top-left language chip
+            2. Below it (>= 16px gap): Guest Name Plate ("INVITATION FOR")
+            3. Couple names in ivory #FFF8EC with soft shadow, clamp(44px, 13vw, 76px)
+            4. Wax seal (uncovered center), small gold ornament & "TAP TO OPEN INVITATION" button
+            Fades out within 400ms (opacity and a 12px lift) on tap.
         =================================================================== */}
         <AnimatePresence>
           {!isOpened && (
             <motion.div
               key="envelope-pre-tap-overlay"
-              initial={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+              data-testid="hero-stage-a"
+              initial={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               onClick={startExperience}
-              className="absolute inset-0 z-30 flex flex-col justify-between items-center text-center px-4 sm:px-6 pt-16 sm:pt-20 pb-10 sm:pb-14 cursor-pointer"
+              className="absolute inset-0 z-30 flex flex-col justify-between items-center text-center px-4 sm:px-6 pt-3 pb-8 sm:pb-12 cursor-pointer"
             >
-              {/* Upper Area, Centered in the Envelope Flap Above the Wax Seal */}
-              <div className="w-full max-w-[390px] flex flex-col items-center gap-2">
-                {guestDisplayName && (
-                  <GuestNamePlate
-                    guestDisplayName={guestDisplayName}
-                    welcomeLabel={welcomeLabel}
-                    langCode={langCode}
-                    onClick={onChangeName}
-                  />
-                )}
-                {config.SACRED_HEADER && config.SACRED_HEADER_SYMBOL && (
-                  <p
-                    data-testid="sacred-header-symbol"
-                    className="text-sm tracking-[0.2em] ivory-gold-envelope-text opacity-90"
-                    style={{ color: '#F1D58A', fontSize: '14px' }}
-                  >
-                    {config.SACRED_HEADER_SYMBOL}
-                  </p>
-                )}
-                <h1
-                  className="leading-[1.18] min-h-[3.5rem] flex items-center justify-center ivory-gold-envelope-text select-text text-center"
-                  style={{
-                    color: '#FFF8EC',
-                    fontFamily: coupleFontFamily,
-                    fontWeight: usesLatinCoupleFont ? 400 : 700,
-                    fontSize: usesLatinCoupleFont
-                      ? 'clamp(2.4rem, 10vw, 3.25rem)'
-                      : 'clamp(1.85rem, 7.5vw, 2.5rem)',
-                  }}
-                >
-                  {coupleDisplayName}
-                </h1>
-                {/* Translated Tagline */}
-                <p
-                  data-testid="hero-mood-line"
-                  className="font-heading-serif italic ivory-gold-envelope-text opacity-95"
-                  style={{ color: '#FFF8EC', fontSize: '16px' }}
-                >
-                  {heroTaglineText}
-                </p>
-                <p
+              {/* Top Column: Language Chip at top-left, then >= 18px gap, then Guest Name Plate + Couple Names */}
+              <div className="w-full flex flex-col items-center">
+                <div
                   dir="ltr"
-                  className="font-english uppercase font-medium tracking-[0.16em] ivory-gold-envelope-text"
-                  style={{ color: '#F1D58A', fontSize: '14px' }}
+                  className="w-full flex items-center justify-start pt-safe min-h-[44px]"
                 >
-                  {dict.weddingCity}
-                </p>
+                  <button
+                    type="button"
+                    data-testid="hero-language-chip"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenLanguageSheet();
+                    }}
+                    aria-label={`${dict.languageChipLabel}: ${activeNativeName}`}
+                    className="h-[44px] min-h-[44px] px-3.5 rounded-full flex items-center gap-2 backdrop-blur-md shadow-sm active:scale-95 transition-all cursor-pointer"
+                    style={{
+                      backgroundColor: `${theme.base}D9`,
+                      border: `1px solid ${theme.goldStart}99`,
+                      color: theme.text,
+                    }}
+                  >
+                    <Globe
+                      className="w-4 h-4 shrink-0"
+                      style={{ color: theme.button }}
+                      aria-hidden="true"
+                    />
+                    <span
+                      className="font-medium tracking-wide whitespace-nowrap"
+                      style={{
+                        fontSize: '13px',
+                        fontFamily: `var(--font-active-script), 'Jost', sans-serif`,
+                      }}
+                    >
+                      {activeNativeName}
+                    </span>
+                  </button>
+                </div>
+
+                {/* Upper Envelope Flap Area (20px below language chip so >= 16px at all viewports) */}
+                <div className="w-full max-w-[390px] flex flex-col items-center gap-2 mt-[20px]">
+                  {guestDisplayName && (
+                    <GuestNamePlate
+                      guestDisplayName={guestDisplayName}
+                      plateLabel={invitationForLabel}
+                      langCode={langCode}
+                      onClick={onChangeName}
+                    />
+                  )}
+                  <h1
+                    data-testid="hero-stage-a-couple-names"
+                    className="flex items-center justify-center select-text text-center px-1"
+                    style={{
+                      color: '#FFF8EC',
+                      textShadow: '0 2px 14px rgba(70,30,40,.45)',
+                      fontFamily: coupleFontFamily,
+                      fontWeight: usesLatinCoupleFont ? 400 : 700,
+                      fontSize: 'clamp(44px, 13vw, 76px)',
+                      lineHeight: usesLatinCoupleFont ? 1.12 : 1.28,
+                    }}
+                  >
+                    {coupleDisplayName}
+                  </h1>
+                </div>
               </div>
 
               {/* Middle Area: Intentionally empty so the envelope's golden wax seal is never covered */}
               <div className="flex-1 w-full pointer-events-none" aria-hidden="true" />
 
-              {/* Bottom Area: Theme Greeting above Softly Pulsing "Tap to open invitation" Button */}
-              <div className="w-full flex flex-col items-center gap-2">
-                <p
-                  data-testid="hero-theme-greeting"
-                  className="font-hindi-heading text-lg sm:text-xl ivory-gold-envelope-text tracking-wide"
-                  style={{ color: '#FFF8EC' }}
+              {/* Bottom Area: Small gold ornament and "TAP TO OPEN INVITATION" button */}
+              <div className="w-full flex flex-col items-center gap-2.5">
+                <svg
+                  viewBox="0 0 120 18"
+                  className="w-28 h-4 shrink-0"
+                  fill="none"
+                  aria-hidden="true"
+                  data-testid="hero-stage-a-ornament"
                 >
-                  {getLocalizedGreeting(theme, langCode)}
-                </p>
+                  <path
+                    d="M6 9 H48 M72 9 H114"
+                    stroke="#F1D58A"
+                    strokeWidth="1.15"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M60 2.5 L65 9 L60 15.5 L55 9 Z"
+                    fill="#F1D58A"
+                    stroke="#D4A853"
+                    strokeWidth="1.1"
+                  />
+                </svg>
+
                 <button
                   type="button"
+                  data-testid="hero-tap-to-open-btn"
                   onClick={(e) => {
                     e.stopPropagation();
                     startExperience();
@@ -569,8 +596,8 @@ export const HeroOpening: React.FC<HeroOpeningProps> = ({
         </AnimatePresence>
 
         {/* ===================================================================
-            POST-VIDEO REVEAL OVER EMPTY CALM AREA (Inside 9:16 Video Frame)
-            Soft radial cream glow only (no translucent rectangle or hard box edges)
+            STAGE B: POST-VIDEO REVEAL OVER FINAL FRAME
+            150ms stagger, handwriting stroke on couple names, soft radial glow only
         =================================================================== */}
         <div className="relative z-20 flex-1 flex flex-col items-center justify-center pt-4 pb-8 px-4 sm:px-5 text-center pointer-events-none">
           <AnimatePresence>
@@ -578,73 +605,77 @@ export const HeroOpening: React.FC<HeroOpeningProps> = ({
               <motion.div
                 key="hero-revealed-content"
                 data-testid="hero-revealed-content"
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.15, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
                 className="w-full max-w-[420px] mx-auto flex flex-col items-center pointer-events-auto px-3 py-6 gap-[15px]"
                 style={{
                   background:
                     'radial-gradient(closest-side, rgba(255,248,236,0.88) 0%, rgba(255,248,236,0.52) 64%, rgba(255,248,236,0) 100%)',
                 }}
               >
-                {/* 1. Guest Name Plate at top of text block (when name is saved) */}
+                {/* 1. (0.00s) Guest Name Plate with label "WELCOME" (when name is saved) */}
                 {guestDisplayName && (
                   <GuestNamePlate
                     guestDisplayName={guestDisplayName}
-                    welcomeLabel={welcomeLabel}
+                    plateLabel={welcomeLabel}
                     langCode={langCode}
+                    delay={0}
                     onClick={onChangeName}
                   />
                 )}
 
-                {/* 2. Thin Gold Ornament Divider above the label */}
-                <svg
-                  viewBox="0 0 120 18"
-                  className="w-28 h-4 shrink-0"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M6 9 H48 M72 9 H114"
-                    stroke="#C99A4B"
-                    strokeWidth="1.15"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M60 2.5 L65 9 L60 15.5 L55 9 Z"
-                    fill="#D4A853"
-                    stroke="#9A6A22"
-                    strokeWidth="1.1"
-                  />
-                </svg>
-
-                {/* 3. Small label "शुभ विवाह" / "The Wedding Of": 16px, 700, .2em, antique-gold gradient */}
-                <motion.p
-                  data-testid="hero-opening-blessing"
+                {/* 2. (0.15s) Thin Gold Ornament Divider & Small Label "The Wedding Of" / "शुभ विवाह" */}
+                <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.85, delay: 0.1 }}
-                  className="uppercase text-center leading-snug"
-                  style={{
-                    fontSize: '16px',
-                    fontWeight: 700,
-                    letterSpacing: '0.2em',
-                    background: 'linear-gradient(90deg, #9A6A22 0%, #D4A853 50%, #9A6A22 100%)',
-                    WebkitBackgroundClip: 'text',
-                    backgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    color: '#9A6A22',
-                  }}
+                  transition={{ duration: 0.7, delay: 0.15 }}
+                  className="flex flex-col items-center gap-[12px]"
                 >
-                  {dict.openingBlessing}
-                </motion.p>
+                  <svg
+                    viewBox="0 0 120 18"
+                    className="w-28 h-4 shrink-0"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M6 9 H48 M72 9 H114"
+                      stroke="#C99A4B"
+                      strokeWidth="1.15"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M60 2.5 L65 9 L60 15.5 L55 9 Z"
+                      fill="#D4A853"
+                      stroke="#9A6A22"
+                      strokeWidth="1.1"
+                    />
+                  </svg>
 
-                {/* 4. Couple Names: clamp(44px, 13vw, 76px), deep plum #3E2430, text-shadow */}
+                  <p
+                    data-testid="hero-opening-blessing"
+                    className="uppercase text-center leading-snug"
+                    style={{
+                      fontSize: '16px',
+                      fontWeight: 700,
+                      letterSpacing: '0.2em',
+                      background: 'linear-gradient(90deg, #9A6A22 0%, #D4A853 50%, #9A6A22 100%)',
+                      WebkitBackgroundClip: 'text',
+                      backgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      color: '#9A6A22',
+                    }}
+                  >
+                    {dict.openingBlessing}
+                  </p>
+                </motion.div>
+
+                {/* 3. (0.30s) Couple Names: clamp(44px, 13vw, 76px), plum #3E2430, handwriting-style stroke */}
                 <motion.h2
                   data-testid="hero-couple-names"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1.2, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                  initial={{ clipPath: 'inset(-25% 100% -25% 0%)', opacity: 0.35 }}
+                  animate={{ clipPath: 'inset(-25% 0% -25% 0%)', opacity: 1 }}
+                  transition={{ duration: 1.2, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
                   className="text-center select-text max-w-full px-1 py-1"
                   style={{
                     fontFamily: coupleFontFamily,
@@ -658,12 +689,12 @@ export const HeroOpening: React.FC<HeroOpeningProps> = ({
                   {coupleDisplayName}
                 </motion.h2>
 
-                {/* 5. Tagline: italic serif 20px in plum at 80% opacity, always translated */}
+                {/* 4. (0.45s) Tagline: italic serif 20px in plum at 80% opacity, translated */}
                 <motion.p
                   data-testid="hero-tagline"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.85, delay: 0.35 }}
+                  transition={{ duration: 0.75, delay: 0.45 }}
                   className="font-heading-serif italic text-center max-w-[340px]"
                   style={{
                     fontSize: '20px',
@@ -675,12 +706,33 @@ export const HeroOpening: React.FC<HeroOpeningProps> = ({
                   {heroTaglineText}
                 </motion.p>
 
-                {/* 6. Location: Jost 500, 14px, letter-spacing .16em, plum (no date line) */}
+                {/* Optional Date Line (only when config.SHOW_DATE_ON_HERO is true) */}
+                {config.SHOW_DATE_ON_HERO && (
+                  <motion.p
+                    data-testid="hero-date"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.75, delay: 0.52 }}
+                    className="uppercase text-center"
+                    style={{
+                      fontFamily: "'Jost', var(--font-active-script), sans-serif",
+                      fontWeight: 600,
+                      fontSize: '14px',
+                      letterSpacing: '0.18em',
+                      color: '#3E2430',
+                      textShadow: '0 1px 10px rgba(255,248,236,0.85)',
+                    }}
+                  >
+                    {config.WEDDING_DATE_DISPLAY}
+                  </motion.p>
+                )}
+
+                {/* 5. (0.60s) Location: Jost 500, 14px, letter-spacing .16em, plum */}
                 <motion.p
                   data-testid="hero-location"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.85, delay: 0.45 }}
+                  transition={{ duration: 0.75, delay: 0.6 }}
                   className="uppercase text-center"
                   style={{
                     fontFamily: "'Jost', var(--font-active-script), sans-serif",
@@ -694,14 +746,14 @@ export const HeroOpening: React.FC<HeroOpeningProps> = ({
                   {dict.weddingCity}
                 </motion.p>
 
-                {/* 7. Scroll cue: "Scroll down" (translated) 16px in gold (#9A6A22) with bouncing chevron inside gold circle */}
+                {/* 6. (0.75s) Scroll cue: "Scroll down" (translated) 16px in gold (#9A6A22) with bouncing chevron */}
                 <motion.button
                   type="button"
                   data-testid="hero-scroll-cue"
                   onClick={onScrollToInvite}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.85, delay: 0.6 }}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.75, delay: 0.75 }}
                   className="mt-1 min-h-[44px] min-w-[44px] px-4 py-1.5 flex flex-col items-center justify-center gap-1.5 transition-colors cursor-pointer group"
                   style={{ color: '#9A6A22' }}
                   aria-label="Scroll to invitation details"
@@ -736,4 +788,3 @@ export const HeroOpening: React.FC<HeroOpeningProps> = ({
     </section>
   );
 };
-

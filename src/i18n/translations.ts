@@ -184,6 +184,7 @@ export type TranslationDictionary = {
   scrollCue: string;
   muteMusic: string;
   unmuteMusic: string;
+  heroInvitationForLabel: string;
   heroWelcomeLabel: string;
   heroTagline: string;
 
@@ -247,6 +248,11 @@ export type TranslationDictionary = {
   countdownMinutesSub: string;
   countdownSeconds: string;
   countdownSecondsSub: string;
+  countdownScratchPrompt: string;
+  countdownTapToReveal: string;
+  countdownScratchAgain: string;
+  countdownDaysToGo: string;
+  countdownDaysToGo_guest: string;
 
   // Section 6: Hamare Utsav (Events)
   utsavHeadingNative: string;
@@ -429,6 +435,7 @@ const EN_TRANSLATIONS: TranslationDictionary = {
   scrollCue: 'Scroll down',
   muteMusic: 'Mute background music',
   unmuteMusic: 'Unmute background music',
+  heroInvitationForLabel: 'INVITATION FOR',
   heroWelcomeLabel: 'WELCOME',
   heroTagline: 'Two hearts, one golden morning',
 
@@ -495,6 +502,11 @@ const EN_TRANSLATIONS: TranslationDictionary = {
   countdownMinutesSub: 'Mins',
   countdownSeconds: 'Seconds',
   countdownSecondsSub: 'Secs',
+  countdownScratchPrompt: 'Scratch to reveal the big day',
+  countdownTapToReveal: "Can't scratch? Tap to reveal",
+  countdownScratchAgain: 'Scratch again',
+  countdownDaysToGo: 'Only {n} days to go!',
+  countdownDaysToGo_guest: '{guest}, only {n} days to go!',
 
   utsavHeadingNative: 'Our Celebrations',
   utsavHeadingScript: 'Our Celebrations',
@@ -1368,8 +1380,8 @@ const TA_TRANSLATIONS: TranslationDictionary = {
 
 const TE_TRANSLATIONS: TranslationDictionary = {
   ...EN_TRANSLATIONS,
-  tapToOpen: 'ఆహ్వానాన్ని తెరవడానికి ট్యాప్ చేయండి',
-  openingBlessing: 'శుభ వివాహ মহోత్సవం',
+  tapToOpen: 'ఆహ్వానాన్ని తెరవడానికి ట్యాప్ చేయండి',
+  openingBlessing: 'శుభ వివాహ महోత్సవం'.replace('मह', 'మహ'),
   weddingCity: 'అమృత్‌సర్, పంజాబ్',
   scrollCue: 'క్రిందికి స్క్రోల్ చేయండి',
   muteMusic: 'సంగీతం ఆపండి',
@@ -1777,6 +1789,7 @@ export const PERSONALISED_GUEST_TRANSLATIONS: Record<
   Partial<TranslationDictionary>
 > = {
   en: {
+    heroInvitationForLabel: 'INVITATION FOR',
     heroWelcomeLabel: 'WELCOME',
     heroTagline: 'Two hearts, one golden morning',
     invitationBlessingLine_guest: '{guest}, you and your family are warmly invited',
@@ -1795,8 +1808,14 @@ export const PERSONALISED_GUEST_TRANSLATIONS: Record<
     rsvpToastCal_guest: 'Thank you, {guest}! Your calendar invite has been downloaded.',
     footerWaitingLine_guest: 'We look forward to celebrating with you, {guest}',
     pageTitle_guest: 'A wedding invitation for {guest}',
+    countdownScratchPrompt: 'Scratch to reveal the big day',
+    countdownTapToReveal: "Can't scratch? Tap to reveal",
+    countdownScratchAgain: 'Scratch again',
+    countdownDaysToGo: 'Only {n} days to go!',
+    countdownDaysToGo_guest: '{guest}, only {n} days to go!',
   },
   hi: {
+    heroInvitationForLabel: 'आपके लिए निमंत्रण',
     heroWelcomeLabel: 'स्वागत है',
     heroTagline: 'सरसों के फूलों की सुनहरी सुबह, दो दिलों का मिलन',
     invitationBlessingLine_guest: '{guest}, आप सपरिवार सादर आमंत्रित हैं',
@@ -1815,8 +1834,14 @@ export const PERSONALISED_GUEST_TRANSLATIONS: Record<
     rsvpToastCal_guest: 'धन्यवाद, {guest}! कैलेंडर निमंत्रण डाउनलोड हो गया है।',
     footerWaitingLine_guest: 'आपके साथ जश्न मनाने का इंतज़ार रहेगा, {guest}',
     pageTitle_guest: '{guest} के लिए विवाह निमंत्रण',
+    countdownScratchPrompt: 'शुभ दिन जानने के लिए यहाँ स्क्रैच करें',
+    countdownTapToReveal: 'स्क्रैच नहीं हो रहा? देखने के लिए टैप करें',
+    countdownScratchAgain: 'फिर से स्क्रैच करें',
+    countdownDaysToGo: 'बस {n} दिन बाकी हैं!',
+    countdownDaysToGo_guest: '{guest}, बस {n} दिन बाकी हैं!',
   },
   pa: {
+    heroInvitationForLabel: 'ਤੁਹਾਡੇ ਲਈ ਸੱਦਾ',
     heroWelcomeLabel: 'ਜੀ ਆਇਆਂ ਨੂੰ',
     heroTagline: 'ਸਰ੍ਹੋਂ ਦੇ ਫੁੱਲਾਂ ਦੀ ਸੁਨਹਿਰੀ ਸਵੇਰ, ਦੋ ਦਿਲਾਂ ਦਾ ਮਿਲਾਪ',
     invitationBlessingLine_guest: '{guest}, ਤੁਹਾਨੂੰ ਅਤੇ ਤੁਹਾਡੇ ਪਰਿਵਾਰ ਨੂੰ ਨਿੱਘਾ ਸੱਦਾ ਹੈ',
@@ -1835,8 +1860,14 @@ export const PERSONALISED_GUEST_TRANSLATIONS: Record<
     rsvpToastCal_guest: 'ਧੰਨਵਾਦ, {guest}! ਕੈਲੰਡਰ ਸੱਦਾ ਡਾਊਨਲੋਡ ਹੋ ਗਿਆ ਹੈ।',
     footerWaitingLine_guest: 'ਤੁਹਾਡੇ ਨਾਲ ਜਸ਼ਨ ਮਨਾਉਣ ਦੀ ਉਡੀਕ ਰਹੇਗੀ, {guest}',
     pageTitle_guest: '{guest} ਲਈ ਵਿਆਹ ਦਾ ਸੱਦਾ',
+    countdownScratchPrompt: 'ਸ਼ੁਭ ਦਿਨ ਦੇਖਣ ਲਈ ਇੱਥੇ ਸਕ੍ਰੈਚ ਕਰੋ',
+    countdownTapToReveal: 'ਸਕ੍ਰੈਚ ਨਹੀਂ ਹੋ ਰਿਹਾ? ਦੇਖਣ ਲਈ ਟੈਪ ਕਰੋ',
+    countdownScratchAgain: 'ਦੁਬਾਰਾ ਸਕ੍ਰੈਚ ਕਰੋ',
+    countdownDaysToGo: 'ਬੱਸ {n} ਦਿਨ ਬਾਕੀ ਹਨ!',
+    countdownDaysToGo_guest: '{guest}, ਬੱਸ {n} ਦਿਨ ਬਾਕੀ ਹਨ!',
   },
   mr: {
+    heroInvitationForLabel: 'आपणास निमंत्रण',
     heroWelcomeLabel: 'सुस्वागतम्',
     heroTagline: 'सोनेरी सकाळ आणि दोन मनांचे पवित्र मिलन',
     invitationBlessingLine_guest: '{guest}, आपण सहकुटुंब सादर आमंत्रित आहात',
@@ -1855,8 +1886,14 @@ export const PERSONALISED_GUEST_TRANSLATIONS: Record<
     rsvpToastCal_guest: 'धन्यवाद, {guest}! कॅलेंडर निमंत्रण डाउनलोड झाले आहे.',
     footerWaitingLine_guest: 'तुमच्यासोबत हा आनंदोत्सव साजरा करण्याची उत्सुकता आहे, {guest}',
     pageTitle_guest: '{guest} यांच्यासाठी विवाह निमंत्रण',
+    countdownScratchPrompt: 'मंगल दिवस पाहण्यासाठी येथे स्क्रॅच करा',
+    countdownTapToReveal: 'स्क्रॅच होत नाहीये? पाहण्यासाठी टॅप करा',
+    countdownScratchAgain: 'पुन्हा स्क्रॅच करा',
+    countdownDaysToGo: 'फक्त {n} दिवस उरले आहेत!',
+    countdownDaysToGo_guest: '{guest}, फक्त {n} दिवस उरले आहेत!',
   },
   gu: {
+    heroInvitationForLabel: 'આપના માટે નિમંત્રણ',
     heroWelcomeLabel: 'સ્વાગત છે',
     heroTagline: 'સોનેરી સવાર અને બે હૃદયોનું પવિત્ર મિલન',
     invitationBlessingLine_guest: '{guest}, આપ સહપરિવાર સાદર આમંત્રિત છો',
@@ -1875,8 +1912,14 @@ export const PERSONALISED_GUEST_TRANSLATIONS: Record<
     rsvpToastCal_guest: 'આભાર, {guest}! કેલેન્ડર આમંત્રણ ડાઉનલોડ થઈ ગયું છે.',
     footerWaitingLine_guest: 'આપની સાથે ઉજવણી કરવાની આતુરતાથી રાહ જોઈશું, {guest}',
     pageTitle_guest: '{guest} માટે લગ્નનું આમંત્રણ',
+    countdownScratchPrompt: 'શુભ દિવસ જોવા માટે અહીં સ્ક્રેચ કરો',
+    countdownTapToReveal: 'સ્ક્રેચ નથી થતું? જોવા માટે ટેપ કરો',
+    countdownScratchAgain: 'ફરીથી સ્ક્રેચ કરો',
+    countdownDaysToGo: 'ફક્ત {n} દિવસ બાકી છે!',
+    countdownDaysToGo_guest: '{guest}, ફક્ત {n} દિવસ બાકી છે!',
   },
   bn: {
+    heroInvitationForLabel: 'আপনার জন্য আমন্ত্রণ',
     heroWelcomeLabel: 'স্বাগতম',
     heroTagline: 'সোনালি সকাল ও দুটি হৃদয়ের শুভ মিলন',
     invitationBlessingLine_guest: '{guest}, আপনাকে ও আপনার পরিবারকে সাদর আমন্ত্রণ',
@@ -1895,8 +1938,14 @@ export const PERSONALISED_GUEST_TRANSLATIONS: Record<
     rsvpToastCal_guest: 'ধন্যবাদ, {guest}! ক্যালেন্ডার আমন্ত্রণ ডাউনলোড হয়েছে।',
     footerWaitingLine_guest: 'আপনার সাথে আনন্দ ভাগ করে নেওয়ার অপেক্ষায় রইলাম, {guest}',
     pageTitle_guest: '{guest}-এর জন্য বিয়ের আমন্ত্রণ',
+    countdownScratchPrompt: 'শুভ দিনটি জানতে এখানে স্ক্র্যাচ করুন',
+    countdownTapToReveal: 'স্ক্র্যাচ করতে পারছেন না? দেখতে ট্যাপ করুন',
+    countdownScratchAgain: 'আবার স্ক্র্যাচ করুন',
+    countdownDaysToGo: 'আর মাত্র {n} দিন বাকি!',
+    countdownDaysToGo_guest: '{guest}, আর মাত্র {n} দিন বাকি!',
   },
   bho: {
+    heroInvitationForLabel: 'रउआ खातिर नेवता',
     heroWelcomeLabel: 'स्वागत बा',
     heroTagline: 'सरसों के फूलन के सुनहरा भोर, दू दिलन के मिलन',
     invitationBlessingLine_guest: '{guest}, रउआ सपरिवार सादर नेवता बा',
@@ -1915,8 +1964,14 @@ export const PERSONALISED_GUEST_TRANSLATIONS: Record<
     rsvpToastCal_guest: 'धन्यवाद, {guest}! कैलेंडर नेवता डाउनलोड हो गइल बा।',
     footerWaitingLine_guest: 'रउआ संगे ई जश्न मनावे के इंतजार रही, {guest}',
     pageTitle_guest: '{guest} खातिर बियाह के नेवता',
+    countdownScratchPrompt: 'शुभ दिन जाने खातिर इहाँ स्क्रैच करीं',
+    countdownTapToReveal: 'स्क्रैच नइखे होखत? देखे खातिर टैप करीं',
+    countdownScratchAgain: 'फेर से स्क्रैच करीं',
+    countdownDaysToGo: 'बस {n} दिन बाचल बा!',
+    countdownDaysToGo_guest: '{guest}, बस {n} दिन बाचल बा!',
   },
   ta: {
+    heroInvitationForLabel: 'உங்களுக்கான அழைப்பிதழ்',
     heroWelcomeLabel: 'வரவேற்கிறோம்',
     heroTagline: 'பொன்னிறக் காலைப் பொழுதில் இரு உள்ளங்களின் சங்கமம்',
     invitationBlessingLine_guest: '{guest}, நீங்களும் உங்கள் குடும்பத்தினரும் அன்புடன் அழைக்கப்படுகிறீர்கள்',
@@ -1935,8 +1990,14 @@ export const PERSONALISED_GUEST_TRANSLATIONS: Record<
     rsvpToastCal_guest: 'நன்றி, {guest}! நாட்காட்டி நிகழ்வு பதிவிறக்கப்பட்டது.',
     footerWaitingLine_guest: 'உங்களுடன் இணைந்து கொண்டாட ஆவலுடன் காத்திருக்கிறோம், {guest}',
     pageTitle_guest: '{guest} அவர்களுக்கான திருமண அழைப்பிதழ்',
+    countdownScratchPrompt: 'திருநாளைக் காண இங்கே தேய்க்கவும்',
+    countdownTapToReveal: 'தேய்க்க முடியவில்லையா? காண தட்டவும்',
+    countdownScratchAgain: 'மீண்டும் தேய்க்கவும்',
+    countdownDaysToGo: 'இன்னும் {n} நாட்களே உள்ளன!',
+    countdownDaysToGo_guest: '{guest}, இன்னும் {n} நாட்களே உள்ளன!',
   },
   te: {
+    heroInvitationForLabel: 'మీ కోసం ఆహ్వానం',
     heroWelcomeLabel: 'స్వాగతం',
     heroTagline: 'బంగారు ఉదయాన రెండు హృదయాల పవిత్ర కలయిక',
     invitationBlessingLine_guest: '{guest}, మిమ్మల్ని మరియు మీ కుటుంబాన్ని సాదరంగా ఆహ్వానిస్తున్నాము',
@@ -1955,8 +2016,14 @@ export const PERSONALISED_GUEST_TRANSLATIONS: Record<
     rsvpToastCal_guest: 'ధన్యవాదాలు, {guest}! క్యాలెండర్ ఆహ్వానం డౌన్‌లోడ్ చేయబడింది.',
     footerWaitingLine_guest: 'మీతో కలిసి వేడుక జరుపుకోవడానికి ఎదురుచూస్తున్నాము, {guest}',
     pageTitle_guest: '{guest} కోసం వివాహ ఆహ్వానం',
+    countdownScratchPrompt: 'శుభ దినాన్ని చూడటానికి ఇక్కడ స్క్రాచ్ చేయండి',
+    countdownTapToReveal: 'స్క్రాచ్ చేయలేకపోతున్నారా? చూడటానికి టాప్ చేయండి',
+    countdownScratchAgain: 'మళ్ళీ స్క్రాచ్ చేయండి',
+    countdownDaysToGo: 'ఇంకా {n} రోజులు మాత్రమే ఉన్నాయి!',
+    countdownDaysToGo_guest: '{guest}, ఇంకా {n} రోజులు మాత్రమే ఉన్నాయి!',
   },
   kn: {
+    heroInvitationForLabel: 'ನಿಮಗಾಗಿ ಆಮಂತ್ರಣ',
     heroWelcomeLabel: 'ಸುಸ್ವಾಗತ',
     heroTagline: 'ಹೊನ್ನಿನ ಮುಂಜಾನೆಯಲ್ಲಿ ಎರಡು ಹೃದಯಗಳ ಶುಭ ಮಿಲನ',
     invitationBlessingLine_guest: '{guest}, ನಿಮಗೂ ನಿಮ್ಮ ಕುಟುಂಬಕ್ಕೂ ಆತ್ಮೀಯ ಸ್ವಾಗತ',
@@ -1975,8 +2042,14 @@ export const PERSONALISED_GUEST_TRANSLATIONS: Record<
     rsvpToastCal_guest: 'ಧನ್ಯವಾದಗಳು, {guest}! ಕ್ಯಾಲೆಂಡರ್ ಆಹ್ವಾನ ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ.',
     footerWaitingLine_guest: 'ನಿಮ್ಮೊಂದಿಗೆ ಸಂಭ್ರಮಿಸಲು ನಾವು ಕಾತರದಿಂದ ಕಾಯುತ್ತಿದ್ದೇವೆ, {guest}',
     pageTitle_guest: '{guest} ಅವರಿಗಾಗಿ ವಿವಾಹ ಆಮಂತ್ರಣ',
+    countdownScratchPrompt: 'ಶುಭ ದಿನವನ್ನು ನೋಡಲು ಇಲ್ಲಿ ಸ್ಕ್ರ್ಯಾಚ್ ಮಾಡಿ',
+    countdownTapToReveal: 'ಸ್ಕ್ರ್ಯಾಚ್ ಮಾಡಲು ಆಗುತ್ತಿಲ್ಲವೇ? ನೋಡಲು ಟ್ಯಾಪ್ ಮಾಡಿ',
+    countdownScratchAgain: 'ಮತ್ತೆ ಸ್ಕ್ರ್ಯಾಚ್ ಮಾಡಿ',
+    countdownDaysToGo: 'ಇನ್ನು ಕೇವಲ {n} ದಿನಗಳು ಬಾಕಿ ಇವೆ!',
+    countdownDaysToGo_guest: '{guest}, ಇನ್ನು ಕೇವಲ {n} ದಿನಗಳು ಬಾಕಿ ಇವೆ!',
   },
   ml: {
+    heroInvitationForLabel: 'നിങ്ങൾക്കായുള്ള ക്ഷണം',
     heroWelcomeLabel: 'സ്വാഗതം',
     heroTagline: 'സുവർണ്ണ പ്രഭാതത്തിൽ രണ്ട് ഹൃദയങ്ങളുടെ സംഗമം',
     invitationBlessingLine_guest: '{guest}, നിങ്ങളെയും കുടുംബത്തെയും സ്നേഹപൂർവ്വം ക്ഷണിക്കുന്നു',
@@ -1995,8 +2068,14 @@ export const PERSONALISED_GUEST_TRANSLATIONS: Record<
     rsvpToastCal_guest: 'നന്ദി, {guest}! കലണ്ടർ ക്ഷണം ഡൗൺലോഡ് ചെയ്തു.',
     footerWaitingLine_guest: 'നിങ്ങളോടൊപ്പം ആഘോഷിക്കാൻ ഞങ്ങൾ കാത്തിരിക്കുന്നു, {guest}',
     pageTitle_guest: '{guest} എന്നവർക്കുള്ള വിവാഹ ക്ഷണക്കത്ത്',
+    countdownScratchPrompt: 'സുദിനം കാണാൻ ഇവിടെ സ്ക്രാച്ച് ചെയ്യുക',
+    countdownTapToReveal: 'സ്ക്രാച്ച് ചെയ്യാൻ കഴിയുന്നില്ലേ? കാണാൻ ടാപ്പ് ചെയ്യുക',
+    countdownScratchAgain: 'വീണ്ടും സ്ക്രാച്ച് ചെയ്യുക',
+    countdownDaysToGo: 'ഇനി {n} ദിവസങ്ങൾ മാത്രം!',
+    countdownDaysToGo_guest: '{guest}, ഇനി {n} ദിവസങ്ങൾ മാത്രം!',
   },
   ur: {
+    heroInvitationForLabel: 'آپ کے لیے دعوت نامہ',
     heroWelcomeLabel: 'خوش آمدید',
     heroTagline: 'سنہری صبح اور دو دلوں کا مقدس ملاپ',
     invitationBlessingLine_guest: '{guest}، آپ کو بمعہ اہلِ خانہ پرخلوص دعوت دی جاتی ہے',
@@ -2015,6 +2094,11 @@ export const PERSONALISED_GUEST_TRANSLATIONS: Record<
     rsvpToastCal_guest: 'شکریہ، {guest}! کیلنڈر دعوت نامہ ڈاؤن لوڈ ہو گیا ہے۔',
     footerWaitingLine_guest: 'آپ کے ساتھ خوشیاں منانے کے منتظر رہیں گے، {guest}',
     pageTitle_guest: '{guest} کے لیے شادی کا دعوت نامہ',
+    countdownScratchPrompt: 'سعید دن دیکھنے کے لیے یہاں اسکریچ کریں',
+    countdownTapToReveal: 'اسکریچ نہیں ہو رہا؟ دیکھنے کے لیے ٹیپ کریں',
+    countdownScratchAgain: 'دوبارہ اسکریچ کریں',
+    countdownDaysToGo: 'بس {n} دن باقی ہیں!',
+    countdownDaysToGo_guest: '{guest}، بس {n} دن باقی ہیں!',
   },
 };
 

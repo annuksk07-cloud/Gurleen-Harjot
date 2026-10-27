@@ -12,6 +12,7 @@ export const WEDDING_CONFIG = {
   POSTER_SRC: "", // Optional poster image URL
   AUDIO_SRC: "", // Optional external audio URL (synthesized ambient music plays if empty)
   REVEAL_DELAY_SECONDS: 8.0, // 10s video: last 2s calm archway holds & fades in text at 8.0s
+  SHOW_DATE_ON_HERO: false, // Default false: date stays hidden until the scratch card is revealed
   TAP_TO_OPEN_TEXT: "Tap to open invitation",
   VIDEO_PLACEHOLDER_LABEL: "Video yahan aayegi",
 

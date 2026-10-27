@@ -404,6 +404,73 @@ class AmbientWeddingAudio {
     }
   }
 
+  /**
+   * Plays soft synthesized firework crackles and a small auspicious chime
+   * when the countdown scratch card reveals. Plays nothing when muted or under reduced motion.
+   */
+  public playFireworksRevealSound(): void {
+    if (typeof window === 'undefined' || this.isMuted) return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+
+    try {
+      const now = ctx.currentTime;
+
+      // 1. Small warm bell chime (two harmonic sine tones)
+      const chimeFreqs = [587.33, 880.0, 1174.66]; // D5, A5, D6
+      chimeFreqs.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        const startAt = now + idx * 0.09;
+        osc.frequency.setValueAtTime(freq, startAt);
+        gain.gain.setValueAtTime(0.0001, startAt);
+        gain.gain.linearRampToValueAtTime(0.11 / (idx + 1), startAt + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.95);
+        osc.connect(gain);
+        gain.connect(this.masterGain!);
+        osc.start(startAt);
+        osc.stop(startAt + 1.0);
+      });
+
+      // 2. Soft synthesized sparkler/firework crackle bursts using short filtered noise buffer
+      const sampleRate = ctx.sampleRate || 44100;
+      const noiseDuration = 0.06;
+      const bufferSize = Math.floor(sampleRate * noiseDuration);
+      const noiseBuffer = ctx.createBuffer(1, bufferSize, sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.35));
+      }
+
+      const crackleTimes = [0.12, 0.28, 0.52, 0.64, 0.92, 1.08, 1.35, 1.55];
+      crackleTimes.forEach((offset) => {
+        const src = ctx.createBufferSource();
+        src.buffer = noiseBuffer;
+        const bandpass = ctx.createBiquadFilter();
+        bandpass.type = 'bandpass';
+        bandpass.frequency.setValueAtTime(1800 + Math.random() * 1400, now + offset);
+        bandpass.Q.setValueAtTime(2.2, now + offset);
+
+        const gain = ctx.createGain();
+        const t0 = now + offset;
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.linearRampToValueAtTime(0.09, t0 + 0.006);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + noiseDuration);
+
+        src.connect(bandpass);
+        bandpass.connect(gain);
+        gain.connect(this.masterGain!);
+        src.start(t0);
+        src.stop(t0 + noiseDuration + 0.01);
+      });
+    } catch {
+      // Ignore audio synth error
+    }
+  }
+
   public setMuted(muted: boolean): void {
     this.isMuted = muted;
     if (typeof window !== 'undefined') {

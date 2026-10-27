@@ -354,9 +354,13 @@ export default function App() {
     try {
       window.localStorage.removeItem('guest_name');
       window.localStorage.removeItem('skip_welcome');
+      window.sessionStorage.removeItem('sarson_subah_countdown_revealed');
     } catch {
       // Ignore storage error
     }
+    window.dispatchEvent(new CustomEvent('sarson-subah:reset-scratch'));
+    window.dispatchEvent(new CustomEvent('sarson-subah:reset-hero'));
+    setIsInvitationOpened(false);
     setSavedName(null);
     setHasSkippedWelcome(false);
     setNoteToastVisible(false);
